@@ -9,7 +9,7 @@ import { rootSaga } from "./rootSaga";
 const sagaMiddleware = createSagaMiddleware();
 
 // Mount it on the Store
-const store = createStore(rootReducer, applyMiddleware(sagaMiddleware, logger));
+const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
 
 // Run the saga
 sagaMiddleware.run(rootSaga);

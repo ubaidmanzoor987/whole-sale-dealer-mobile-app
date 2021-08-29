@@ -1,19 +1,21 @@
-import * as React from "react";
+import React from "react";
+import { useSelector } from "react-redux";
 import { StyleSheet } from "react-native";
-
-import EditScreenInfo from "../EditScreenInfo";
 import { Text, View } from "../Themed";
+import { getUserSelector } from "../../store/auth/selector";
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const userData = useSelector(getUserSelector);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
+      <Text style={styles.title}>Home Screen</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <EditScreenInfo path="/screens/TabOneScreen.tsx" />
+      <Text>Welcome {userData.data?.user_name}</Text>
     </View>
   );
 }

@@ -5,9 +5,9 @@ import * as React from "react";
 
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
-import TabOneScreen from "../components/screens/TabOneScreen";
+import HomeScreen from "../components/screens/HomeScreen";
 import TabTwoScreen from "../components/screens/TabTwoScreen";
-import { BottomTabParamList, TabOneParamList, TabTwoParamList } from "../types";
+import { BottomTabParamList, HomeParamList, TabTwoParamList } from "../types";
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -16,16 +16,14 @@ export default function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="TabOne"
+      initialRouteName="Home"
       tabBarOptions={{ activeTintColor: Colors[colorScheme]?.tint }}
     >
       <BottomTab.Screen
-        name="TabOne"
-        component={TabOneNavigator}
+        name="Home"
+        component={HomeNavigator}
         options={{
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="ios-code" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
       />
       <BottomTab.Screen
@@ -37,21 +35,18 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
+
       <BottomTab.Screen
         name="TabThree"
         component={TabTwoNavigator}
         options={{
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="ios-code" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
     </BottomTab.Navigator>
   );
 }
 
-// You can explore the built-in icon families and icons on the web at:
-// https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
   color: string;
@@ -59,19 +54,13 @@ function TabBarIcon(props: {
   return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
 }
 
-// Each tab has its own navigation stack, you can read more about this pattern here:
-// https://reactnavigation.org/docs/tab-based-navigation#a-stack-navigator-for-each-tab
-const TabOneStack = createStackNavigator<TabOneParamList>();
+const HomeStack = createStackNavigator<HomeParamList>();
 
-function TabOneNavigator() {
+function HomeNavigator() {
   return (
-    <TabOneStack.Navigator>
-      <TabOneStack.Screen
-        name="TabOneScreen"
-        component={TabOneScreen}
-        options={{ headerTitle: "Tab One Title" }}
-      />
-    </TabOneStack.Navigator>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="HomeScreen" component={HomeScreen} />
+    </HomeStack.Navigator>
   );
 }
 
@@ -79,7 +68,7 @@ const TabTwoStack = createStackNavigator<TabTwoParamList>();
 
 function TabTwoNavigator() {
   return (
-    <TabTwoStack.Navigator>
+    <TabTwoStack.Navigator screenOptions={{ headerShown: false }}>
       <TabTwoStack.Screen
         name="TabTwoScreen"
         component={TabTwoScreen}
