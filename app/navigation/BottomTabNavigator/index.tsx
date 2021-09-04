@@ -1,13 +1,17 @@
-import { Ionicons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
-import * as React from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import * as React from 'react';
 
-import Colors from "../constants/Colors";
-import useColorScheme from "../hooks/useColorScheme";
-import HomeScreen from "../components/screens/HomeScreen";
-import TabTwoScreen from "../components/screens/TabTwoScreen";
-import { BottomTabParamList, HomeParamList, TabTwoParamList } from "../types";
+import Colors from '@app/constants/Colors';
+import useColorScheme from '@app/hooks/useColorScheme';
+import HomeScreen from '@app/screens/HomeScreen';
+import TabTwoScreen from '@app/screens/BrandScreen';
+import {
+  BottomTabParamList,
+  HomeParamList,
+  TabTwoParamList,
+} from '../NavigationTypes';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -48,7 +52,7 @@ export default function BottomTabNavigator() {
 }
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof Ionicons>["name"];
+  name: React.ComponentProps<typeof Ionicons>['name'];
   color: string;
 }) {
   return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
@@ -72,7 +76,7 @@ function TabTwoNavigator() {
       <TabTwoStack.Screen
         name="TabTwoScreen"
         component={TabTwoScreen}
-        options={{ headerTitle: "Tab Two Title" }}
+        options={{ headerTitle: 'Tab Two Title' }}
       />
     </TabTwoStack.Navigator>
   );

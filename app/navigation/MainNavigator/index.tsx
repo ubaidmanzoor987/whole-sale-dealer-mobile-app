@@ -7,17 +7,16 @@ import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
-} from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import * as React from "react";
-import { ColorSchemeName } from "react-native";
+} from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import * as React from 'react';
+import { ColorSchemeName } from 'react-native';
 
-import NotFoundScreen from "../components/screens/NotFoundScreen";
-import LoginScreen from "../components/screens/LoginScreen";
-import { RootStackParamList } from "../types";
-import BottomTabNavigator from "./BottomTabNavigator";
-import LinkingConfiguration from "./LinkingConfiguration";
-import TabOneScreen from "../components/screens/HomeScreen";
+import NotFoundScreen from '@app/screens/NotFoundScreen';
+import LoginScreen from '@app/screens/LoginScreen';
+import { RootStackParamList } from '@app/navigation/NavigationTypes';
+import BottomTabNavigator from '@app/navigation/BottomTabNavigator';
+import LinkingConfiguration from '@app/navigation/LinkingConfiguration';
 
 export default function Navigation({
   colorScheme,
@@ -27,7 +26,7 @@ export default function Navigation({
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
     >
       <RootNavigator />
     </NavigationContainer>
@@ -44,7 +43,7 @@ function RootNavigator() {
       <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}
-        options={{ title: "Oops!" }}
+        options={{ title: 'Oops!' }}
       />
     </Stack.Navigator>
   );

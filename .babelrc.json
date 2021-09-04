@@ -1,0 +1,32 @@
+{
+  "presets": ["babel-preset-expo"],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "extensions": [
+          ".ios.ts",
+          ".android.ts",
+          ".ts",
+          ".ios.tsx",
+          ".android.tsx",
+          ".tsx",
+          ".jsx",
+          ".js",
+          ".json"
+        ],
+        "root": ["."],
+        
+        "alias": {
+          "@app/screens": "./app/screens",
+          "@app/store": "./app/store",
+          "@app/utils": "./app/utils",
+          "@app/navigation": "./app/navigation",
+          "@app/constants": "./app/constants/",
+          "@app/hooks": "./hooks/",
+          "@app/assets": "./assets/"
+        }
+      }
+    ]
+  ]
+}
