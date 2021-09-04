@@ -29,6 +29,27 @@ export default (state = initialState, action: UserActions): UserState => {
         user: {},
         error: action.payload.error,
       };
+    case actions.Fetch_User_Logout_Request:
+      return {
+        ...state,
+        pending: true,
+        user: {},
+        error: null,
+      };
+    case actions.Fetch_User_Logout_Success:
+      return {
+        ...state,
+        pending: false,
+        user: action.payload,
+        error: null,
+      };
+    case actions.Fetch_User_Logout_Failure:
+      return {
+        ...state,
+        pending: false,
+        user: {},
+        error: action.payload.error,
+      };
     default:
       return {
         ...state,
