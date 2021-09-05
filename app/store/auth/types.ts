@@ -1,6 +1,6 @@
 import * as actions from './actionTypes';
 
-interface IUserData {
+export interface IUserData {
   user_name: string;
   shop_name: string;
   owner_name: string;
@@ -16,7 +16,6 @@ interface IUserData {
   token: string;
 }
 export interface IUser {
-  message?: string;
   data?: IUserData;
 }
 
@@ -28,12 +27,14 @@ export interface requestUser {
 
 export interface UserState {
   pending: boolean;
-  user: IUser;
+  user: IUserData;
+  message: string | null;
   error: string | null;
 }
 
 export interface FetchUserSuccessPayload {
-  user: IUser;
+  user: IUserData;
+  message: string;
 }
 
 export interface FetchUserFailurePayload {
@@ -59,10 +60,12 @@ export type FetchUserFailure = {
 
 export interface requestUserLogout {
   token: string;
+  user_name: string;
 }
 
 export interface FetchUserLogoutSuccessPayload {
   message: string;
+  data: any | null;
 }
 
 export interface FetchUserLogoutFailurePayload {

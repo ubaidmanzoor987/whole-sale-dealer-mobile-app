@@ -1,12 +1,14 @@
-import { createSelector } from "reselect";
+import { createSelector } from 'reselect';
 
-import { AppState } from "../rootReducer";
+import { AppState } from '../rootReducer';
 
-const getPending = (state: AppState) => state.user.pending;
+const getPending = (state: AppState) => state.auth.pending;
 
-const getUser = (state: AppState) => state.user.user;
+const getUser = (state: AppState) => state.auth.user;
 
-const getError = (state: AppState) => state.user.error;
+const getMessage = (state: AppState) => state.auth.message;
+
+const getError = (state: AppState) => state.auth.error;
 
 export const getUserSelector = createSelector(getUser, (user) => user);
 
@@ -16,3 +18,8 @@ export const getPendingSelector = createSelector(
 );
 
 export const getErrorSelector = createSelector(getError, (error) => error);
+
+export const getMessageSelector = createSelector(
+  getMessage,
+  (message) => message
+);

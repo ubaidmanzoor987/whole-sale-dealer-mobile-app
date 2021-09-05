@@ -4,7 +4,8 @@ import { UserActions, UserState } from './types';
 
 const initialState: UserState = {
   pending: false,
-  user: {},
+  user: {} as any,
+  message: '',
   error: null,
 };
 
@@ -20,34 +21,35 @@ export default (state = initialState, action: UserActions): UserState => {
         ...state,
         pending: false,
         user: action.payload.user,
+        message: action.payload.message,
         error: null,
       };
     case actions.Fetch_User_Failure:
       return {
         ...state,
         pending: false,
-        user: {},
+        user: {} as any,
         error: action.payload.error,
       };
     case actions.Fetch_User_Logout_Request:
       return {
         ...state,
         pending: true,
-        user: {},
         error: null,
       };
     case actions.Fetch_User_Logout_Success:
       return {
         ...state,
         pending: false,
-        user: action.payload,
+        user: action.payload.data,
+        message: action.payload.message,
         error: null,
       };
     case actions.Fetch_User_Logout_Failure:
       return {
         ...state,
         pending: false,
-        user: {},
+        message: '',
         error: action.payload.error,
       };
     default:
