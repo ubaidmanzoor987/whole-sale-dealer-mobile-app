@@ -91,21 +91,8 @@ function SignUpScreen({
     }
   }, [errorMessageServer]);
 
-  const handleLogin = async () => {
-    if (username.length !== 0 && password.length !== 0) {
-      const data = {
-        user_name: username,
-        password: password,
-        user_type: usertype,
-      };
-      dispatch(fetchUserRequest(data));
-      const user_type = JSON.stringify(usertype);
-      await AsyncStorage.setItem('user_type', user_type);
-    } else if (username.length === 0) {
-      setErrorMessage('User Name is Required');
-    } else if (password.length === 0) {
-      setErrorMessage('Password is Required');
-    }
+  const handleLogin = () => {
+    navigation.navigate('LogIn');
   };
 
   const validate = (email) => {
@@ -221,12 +208,17 @@ function SignUpScreen({
               borderColor: focusEmail ? '#5460E0' : 'black',
             }}
           >
+            <FontAwesome
+              name="envelope"
+              size={20}
+              style={{ paddingTop: '2%', paddingHorizontal: '2%' }}
+            />
             <TextInputNative
               onFocus={toggleFocusEmail}
               onChangeText={handleEmail}
               placeholder="Enter Email"
               onSubmitEditing={setfocusUsername}
-              style={styles.inputField}
+              style={{ width: '93%' }}
             />
           </View>
           {errorMessageEmail ? (
@@ -364,6 +356,16 @@ function SignUpScreen({
             <></>
           )}
         </View>
+        <Button
+          style={styles.loginButton}
+          icon={() => (
+            <MaterialCommunityIcons name="login" size={20} color="white" />
+          )}
+          mode="contained"
+          onPress={handleLogin}
+        >
+          <Text style={styles.loginButtonText}>Sign In</Text>
+        </Button>
       </View>
     </KeyboardAwareScrollView>
   );
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: '88%',
     marginVertical: '4%',
-    height: 40,
+    height: 45,
     borderWidth: 1,
   },
   inputFieldSubView1: {
@@ -439,7 +441,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: '80%',
     marginVertical: '4%',
-    height: 40,
+    height: 45,
     borderWidth: 1,
   },
   icons: {
@@ -480,6 +482,8 @@ const styles = StyleSheet.create({
     width: '85%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
+    padding: '2%',
+    marginTop: '10%',
   },
   loginButtonText: {
     fontSize: 13,
@@ -491,6 +495,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: '8%',
     borderColor: 'grey',
+    padding: '2%',
   },
   signUpButtonText: {
     fontSize: 13,
@@ -512,15 +517,15 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'transparent',
     justifyContent: 'center',
-    paddingTop: '5%',
+    paddingTop: '10%',
   },
   socialTouchable: {
     paddingTop: '1%',
     paddingHorizontal: '5%',
   },
   imageStyle: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     backgroundColor: 'transparent',
   },
   errorText: {

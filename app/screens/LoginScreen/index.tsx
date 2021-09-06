@@ -143,7 +143,7 @@ function LoginScreen({
     setFocusPassword(true);
   };
 
-  const navigateToSignUp = () => {
+  const handleSignUp = () => {
     navigation.navigate('SignUp');
   };
 
@@ -279,7 +279,7 @@ function LoginScreen({
           style={styles.signupButton}
           icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
           mode="contained"
-          onPress={handleLogin}
+          onPress={handleSignUp}
         >
           <Text style={styles.signUpButtonText}>Sign Up</Text>
         </Button>
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     width: '85%',
     borderRadius: 20,
     backgroundColor: 'white',
-    marginTop: '8%',
+    marginTop: '10%',
     borderColor: 'grey',
     padding: '1.8%',
   },
@@ -423,8 +423,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: '5%',
   },
   imageStyle: {
-    width: 30,
-    height: 30,
+    width: 50,
+    height: 50,
     backgroundColor: 'transparent',
   },
 });
