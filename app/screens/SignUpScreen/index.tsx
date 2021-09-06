@@ -26,17 +26,23 @@ import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function LoginScreen({
+function SignUpScreen({
   navigation,
 }: StackScreenProps<RootStackParamList, 'NotFound'>) {
   const dispatch = useDispatch();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [shopName, setShopName] = useState<string>('');
+
   const [visiblePass, setVisiblePass] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessageEmail, setErrorMessageEmail] = useState<string>('');
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [focusUserName, setFocusUserName] = useState<boolean>(false);
   const [focusPassword, setFocusPassword] = useState<boolean>(false);
+  const [focusEmail, setFocusEmail] = useState<boolean>(false);
+  const [focusShopName, setFocusShopName] = useState<boolean>(false);
 
   const [usertype, setUserType] = useState<string>('shop_keeper');
 
@@ -45,7 +51,10 @@ function LoginScreen({
   const errorMessageServer = useSelector(getErrorSelector);
   const message = useSelector(getMessageSelector);
 
+  let userNameFocusField = null as any;
   let passwordFocusField = null as any;
+  let passwordUserNameField = null as any;
+  let passwordShopNameField = null as any;
 
   useEffect(() => {
     const getData = async () => {
@@ -99,12 +108,22 @@ function LoginScreen({
     }
   };
 
-  const handleUsername = (text: string) => {
+  const validate = (email) => {
+    const expression =
+      /(?!.*\.{2})^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([\t]*\r\n)?[\t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([\t]*\r\n)?[\t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
+    const returnval = expression.test(String(email).toLowerCase());
+    console.log(returnval);
+    return returnval;
+  };
+
+  const handleEmail = (text: string) => {
     if (text.length === 0) {
-      setErrorMessage('User Name is Required ');
+      setErrorMessageEmail('Email is Required ');
+    } else if (validate(text) === false) {
+      setErrorMessageEmail('Invalid Email Address');
     } else {
-      setErrorMessage('');
-      setUsername(text);
+      setErrorMessageEmail('');
+      setEmail(text);
     }
   };
 
@@ -129,13 +148,43 @@ function LoginScreen({
   const togglePass = () => {
     setVisiblePass(!visiblePass);
   };
+
   const setfocusPassword = () => {
     passwordFocusField.focus();
   };
 
+  const setfocusUsername = () => {
+    userNameFocusField.focus();
+  };
+
+  const toggleFocusEmail = () => {
+    setFocusEmail(true);
+    setFocusUserName(false);
+    setFocusPassword(false);
+    setFocusShopName(false);
+  };
+
   const toggleFocusUserName = () => {
     setFocusUserName(true);
+    setFocusEmail(false);
     setFocusPassword(false);
+    setFocusShopName(false);
+  };
+
+  const toggleFocusShopName = () => {
+    setFocusUserName(false);
+    setFocusEmail(false);
+    setFocusPassword(false);
+    setFocusShopName(true);
+  };
+
+  const handleShopName = (text: string) => {
+    if (text.length === 0) {
+      setErrorMessage('Password is Required ');
+    } else {
+      setErrorMessage('');
+      setShopName(text);
+    }
   };
 
   const toggleFocusPassword = () => {
@@ -143,41 +192,106 @@ function LoginScreen({
     setFocusPassword(true);
   };
 
-  const navigateToSignUp = () => {
-    navigation.navigate('SignUp');
+  const handleUsername = (text: string) => {
+    if (text.length === 0) {
+      setErrorMessage('User Name is Required ');
+    } else {
+      setErrorMessage('');
+      setUsername(text);
+    }
   };
+
+  const TitleWidget = () => (
+    <View style={styles.titleContainer}>
+      <Text style={styles.titleWelcomeText}>New Account!</Text>
+      <Text style={styles.titleSignText}>Sign Up and get Started</Text>
+    </View>
+  );
+  console.log(focusUserName);
 
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Welcome!</Text>
-        <Text style={styles.titleSignText}>Sign In and get Started</Text>
-      </View>
+      <TitleWidget />
       <View style={styles.fieldsView}>
         <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>User Name</Text>
+          <Text style={styles.labelText}>Email</Text>
           <View
             style={{
               ...styles.inputFieldSubView,
-              borderColor: focusUserName ? 'blue' : 'black',
+              borderColor: focusEmail ? '#5460E0' : 'black',
             }}
           >
-            <FontAwesome
-              name="user"
-              size={24}
-              onPress={togglePass}
-              style={{ paddingTop: '3%', paddingHorizontal: '2%' }}
-            />
             <TextInputNative
-              onFocus={toggleFocusUserName}
-              onChangeText={handleUsername}
-              placeholder="Enter Your User name"
-              onSubmitEditing={setfocusPassword}
-              style={{ width: '85%' }}
-              maxLength={15}
+              onFocus={toggleFocusEmail}
+              onChangeText={handleEmail}
+              placeholder="Enter Email"
+              onSubmitEditing={setfocusUsername}
+              style={styles.inputField}
             />
           </View>
+          {errorMessageEmail ? (
+            <Text style={styles.errorText}>{errorMessageEmail}</Text>
+          ) : (
+            <></>
+          )}
         </View>
+        <View style={styles.inputFieldsMainView1}>
+          <View
+            style={{
+              width: '46%',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Text style={styles.labelText}>User Name</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView1,
+                borderColor: focusUserName ? 'blue' : 'black',
+              }}
+            >
+              <TextInputNative
+                ref={(input) => {
+                  userNameFocusField = input;
+                }}
+                onFocus={toggleFocusUserName}
+                onChangeText={handleUsername}
+                placeholder="Enter User name"
+                onSubmitEditing={setfocusPassword}
+                style={styles.inputField}
+                multiline={true}
+                maxLength={20}
+              />
+            </View>
+          </View>
+          <View
+            style={{
+              width: '52%',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Text style={styles.labelText}>Shop Name</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView1,
+                borderColor: focusShopName ? 'blue' : 'black',
+              }}
+            >
+              <TextInputNative
+                onFocus={toggleFocusShopName}
+                onChangeText={handleShopName}
+                placeholder="Enter Shop Name"
+                onSubmitEditing={setfocusPassword}
+                style={styles.inputField}
+                maxLength={15}
+              />
+            </View>
+          </View>
+        </View>
+
         <View style={styles.inputFieldsMainView}>
           <Text style={styles.labelText}>Password</Text>
           <View
@@ -186,12 +300,6 @@ function LoginScreen({
               borderColor: focusPassword ? 'blue' : 'black',
             }}
           >
-            <MaterialCommunityIcons
-              name="lock"
-              size={24}
-              onPress={togglePass}
-              style={{ paddingTop: '3%', paddingHorizontal: '2%' }}
-            />
             <TextInputNative
               ref={(input) => {
                 passwordFocusField = input;
@@ -201,56 +309,37 @@ function LoginScreen({
               placeholder="Enter Your Passwod"
               onSubmitEditing={handleLogin}
               secureTextEntry={!visiblePass}
-              style={{ width: '80%' }}
-              maxLength={15}
+              style={{ width: '80%', marginLeft: '5%' }}
             />
             <MaterialCommunityIcons
               name={visiblePass ? 'eye' : 'eye-off'}
-              size={20}
+              size={24}
               style={styles.icons}
               onPress={togglePass}
             />
           </View>
         </View>
-
         {errorMessage ? (
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : (
           <></>
         )}
         <View style={styles.clientView}>
-          <Text style={styles.clientViewText}>Switch To Client</Text>
+          <Text style={styles.clientViewText}>Sign Up As Client</Text>
           <Switch
             value={isSwitchOn}
             onValueChange={onToggleSwitch}
             thumbColor="#5460E0"
           />
         </View>
-        <View style={styles.loginButtonView}>
-          {isPending ? (
-            <ActivityIndicator
-              size="large"
-              color="#5460E0"
-              style={styles.activitIndicator}
-            />
-          ) : (
-            <Button
-              style={styles.loginButton}
-              icon={() => (
-                <MaterialCommunityIcons name="login" size={20} color="white" />
-              )}
-              mode="contained"
-              onPress={handleLogin}
-            >
-              <Text style={styles.loginButtonText}>Login</Text>
-            </Button>
-          )}
-        </View>
-        <View style={styles.forgotView}>
-          <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
-            Forgot Password
-          </Text>
-        </View>
+        <Button
+          style={styles.signupButton}
+          icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
+          mode="contained"
+          onPress={handleLogin}
+        >
+          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        </Button>
         <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
@@ -275,20 +364,12 @@ function LoginScreen({
             <></>
           )}
         </View>
-        <Button
-          style={styles.signupButton}
-          icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
-          mode="contained"
-          onPress={handleLogin}
-        >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Button>
       </View>
     </KeyboardAwareScrollView>
   );
 }
 
-export default React.memo(LoginScreen);
+export default React.memo(SignUpScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -304,7 +385,7 @@ const styles = StyleSheet.create({
   },
   titleWelcomeText: {
     paddingLeft: '5%',
-    fontSize: 40,
+    fontSize: 35,
     fontWeight: 'bold',
     paddingTop: '5%',
     color: '#5460E0',
@@ -326,6 +407,14 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'transparent',
   },
+  inputFieldsMainView1: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    marginLeft: '11%',
+    marginTop: '2%',
+  },
   labelText: {
     alignSelf: 'flex-start',
     paddingLeft: '5%',
@@ -339,13 +428,23 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: '88%',
     marginVertical: '4%',
+    height: 40,
     borderWidth: 1,
-    height: 50,
+  },
+  inputFieldSubView1: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    marginLeft: '5%',
+    borderRadius: 30,
+    width: '80%',
+    marginVertical: '4%',
+    height: 40,
+    borderWidth: 1,
   },
   icons: {
-    paddingTop: '3.8%',
-    width: '15%',
-    paddingRight: '5%',
+    paddingTop: '2%',
+    paddingRight: '4%',
   },
   errorMessage: {
     color: 'red',
@@ -363,7 +462,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '85%',
     backgroundColor: 'transparent',
-    marginTop: '2.5%',
   },
   clientViewText: {
     flex: 1,
@@ -376,11 +474,10 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: '10%',
+    paddingTop: '5%',
   },
   loginButton: {
     width: '85%',
-    padding: '1.8%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
   },
@@ -394,7 +491,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: '8%',
     borderColor: 'grey',
-    padding: '1.8%',
   },
   signUpButtonText: {
     fontSize: 13,
@@ -426,5 +522,11 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     backgroundColor: 'transparent',
+  },
+  errorText: {
+    color: 'red',
+    paddingLeft: '8%',
+    fontSize: 12,
+    marginTop: '-4%',
   },
 });
