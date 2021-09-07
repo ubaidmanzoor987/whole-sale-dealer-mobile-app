@@ -4,11 +4,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   TextInput as TextInputNative,
+  TouchableOpacity,
+  Platform,
 } from 'react-native';
 import Constants from 'expo-constants';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 import { fetchUserLoginRequest } from '@app/store/auth/actions';
 import { Image, Text, View } from '@app/screens/Themed';
@@ -140,6 +142,10 @@ function LoginScreen({
     setFocusPassword(true);
   };
 
+  const handleSignUp = () => {
+    navigation.navigate('SignUp');
+  };
+
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
@@ -165,7 +171,7 @@ function LoginScreen({
               onChangeText={handleUsername}
               placeholder="Enter Your User name"
               onSubmitEditing={setfocusPassword}
-              style={styles.inputField}
+              style={{ width: '85%' }}
               maxLength={15}
             />
           </View>
@@ -192,12 +198,12 @@ function LoginScreen({
               placeholder="Enter Your Passwod"
               onSubmitEditing={handleLogin}
               secureTextEntry={!visiblePass}
-              style={{ width: '80%', marginLeft: '5%' }}
+              style={{ width: '80%' }}
               maxLength={15}
             />
             <MaterialCommunityIcons
               name={visiblePass ? 'eye' : 'eye-off'}
-              size={24}
+              size={20}
               style={styles.icons}
               onPress={togglePass}
             />
@@ -221,7 +227,7 @@ function LoginScreen({
           {isPending ? (
             <ActivityIndicator
               size="large"
-              color="blue"
+              color="#5460E0"
               style={styles.activitIndicator}
             />
           ) : (
@@ -237,18 +243,43 @@ function LoginScreen({
             </Button>
           )}
         </View>
-        <View
-          style={{
-            backgroundColor: 'transparent',
-            width: '95%',
-            alignItems: 'center',
-            paddingTop: '3%',
-          }}
-        >
+        <View style={styles.forgotView}>
           <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
             Forgot Password
           </Text>
         </View>
+        <View style={styles.socialView}>
+          <TouchableOpacity style={styles.socialTouchable}>
+            <Image
+              source={require('@app/assets/images/google.png')}
+              style={styles.imageStyle}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialTouchable}>
+            <Image
+              source={require('@app/assets/images/fb.png')}
+              style={styles.imageStyle}
+            />
+          </TouchableOpacity>
+          {Platform.OS === 'ios' ? (
+            <TouchableOpacity>
+              <Image
+                source={require('@app/assets/images/apple.png')}
+                style={styles.imageStyle}
+              />
+            </TouchableOpacity>
+          ) : (
+            <></>
+          )}
+        </View>
+        <Button
+          style={styles.signupButton}
+          icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
+          mode="contained"
+          onPress={handleSignUp}
+        >
+          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        </Button>
       </View>
     </KeyboardAwareScrollView>
   );
@@ -305,11 +336,13 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: '88%',
     marginVertical: '4%',
-    height: 40,
+    borderWidth: 1,
+    height: 50,
   },
   icons: {
-    paddingTop: '2%',
-    paddingRight: '4%',
+    paddingTop: '3.8%',
+    width: '15%',
+    paddingRight: '5%',
   },
   errorMessage: {
     color: 'red',
@@ -326,8 +359,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     width: '85%',
-    marginVertical: '7%',
     backgroundColor: 'transparent',
+    marginTop: '2.5%',
   },
   clientViewText: {
     flex: 1,
@@ -340,9 +373,11 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: '10%',
   },
   loginButton: {
     width: '85%',
+    padding: '1.8%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
   },
@@ -350,9 +385,43 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'white',
   },
+  signupButton: {
+    width: '85%',
+    borderRadius: 20,
+    backgroundColor: 'white',
+    marginTop: '10%',
+    borderColor: 'grey',
+    padding: '1.8%',
+  },
+  signUpButtonText: {
+    fontSize: 13,
+    color: '#5460E0',
+  },
   activitIndicator: {
     width: '60%',
-    marginTop: '10%',
     padding: '2%',
+  },
+  forgotView: {
+    backgroundColor: 'transparent',
+    width: '95%',
+    alignItems: 'center',
+    paddingTop: '7%',
+  },
+  socialView: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    paddingTop: '5%',
+  },
+  socialTouchable: {
+    paddingTop: '1%',
+    paddingHorizontal: '5%',
+  },
+  imageStyle: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'transparent',
   },
 });

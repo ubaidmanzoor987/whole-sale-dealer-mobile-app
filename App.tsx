@@ -19,8 +19,8 @@ export default function App() {
     return (
       <Provider store={store}>
         <SafeAreaProvider>
-          <Navigation colorScheme="light" />
-          <StatusBar />
+          <Navigation colorScheme="dark" />
+          <StatusBar style="light" />
         </SafeAreaProvider>
       </Provider>
     );
