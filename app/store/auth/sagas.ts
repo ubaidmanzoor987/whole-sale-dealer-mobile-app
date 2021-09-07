@@ -2,23 +2,35 @@ import axios from 'axios';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 
 import * as actions from './actions';
-import { Fetch_User_Request, Fetch_User_Logout_Request } from './actionTypes';
+import {
+  Fetch_User_Create_Request,
+  Fetch_User_Login_Request,
+  Fetch_User_Logout_Request,
+} from './actionTypes';
 import {
   IUser,
-  requestUser,
+  requestUserLogin,
   requestUserLogout,
-  FetchUserRequest,
+  requestUserCreate,
+  FetchUserCreateRequest,
+  FetchUserLoginRequest,
   FetchUserLogoutRequest,
 } from './types';
 import { ENV_VAR } from '@app/utils/environments';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const getUser = (body: requestUser) =>
+const userLogin = (body: requestUserLogin) =>
   axios.post<IUser>(ENV_VAR.baseUrl + 'shopkeeper/login?t=' + new Date(), body);
 
-const logoutUser = (body: requestUserLogout) =>
+const userLogout = (body: requestUserLogout) =>
   axios.post<IUser>(
     ENV_VAR.baseUrl + 'shopkeeper/logout?t=' + new Date(),
+    body
+  );
+
+const userCreate = (body: requestUserCreate) =>
+  axios.post<IUser>(
+    ENV_VAR.baseUrl + 'shopkeeper/insert_shopkeeper?t=' + new Date(),
     body
   );
 
@@ -40,18 +52,36 @@ async function clearData() {
   }
 }
 
-function* fetchUserSaga(action: FetchUserRequest): any {
+function* fetchUserCreateSaga(action: FetchUserCreateRequest): any {
   try {
-    const response = yield call(getUser, action.payload);
+    const response = yield call(userCreate, action.payload);
+    yield put(
+      actions.fetchUserCreateSuccess({
+        message: response.data.message,
+        data: {},
+      })
+    );
+  } catch (e: any) {
+    yield put(
+      actions.fetchUserCreateFailure({
+        error: e.message,
+      })
+    );
+  }
+}
+
+function* fetchUserLoginSaga(action: FetchUserLoginRequest): any {
+  try {
+    const response = yield call(userLogin, action.payload);
     if (response.data.data === null) {
       yield put(
-        actions.fetchUserFailure({
+        actions.fetchUserLoginFailure({
           error: response.data.message,
         })
       );
     } else {
       yield put(
-        actions.fetchUserSuccess({
+        actions.fetchUserLoginSuccess({
           user: response.data.data,
           message: response.data.message,
         })
@@ -62,7 +92,7 @@ function* fetchUserSaga(action: FetchUserRequest): any {
     }
   } catch (e: any) {
     yield put(
-      actions.fetchUserFailure({
+      actions.fetchUserLoginFailure({
         error: e.message,
       })
     );
@@ -71,7 +101,7 @@ function* fetchUserSaga(action: FetchUserRequest): any {
 
 function* fetchUserLogoutSaga(action: FetchUserLogoutRequest): any {
   try {
-    const response = yield call(logoutUser, action.payload);
+    const response = yield call(userLogout, action.payload);
 
     yield put(
       actions.fetchUserLogoutSuccess({
@@ -90,7 +120,8 @@ function* fetchUserLogoutSaga(action: FetchUserLogoutRequest): any {
 }
 
 function* authSaga() {
-  yield all([takeLatest(Fetch_User_Request, fetchUserSaga)]);
+  yield all([takeLatest(Fetch_User_Create_Request, fetchUserCreateSaga)]);
+  yield all([takeLatest(Fetch_User_Login_Request, fetchUserLoginSaga)]);
   yield all([takeLatest(Fetch_User_Logout_Request, fetchUserLogoutSaga)]);
 }
 

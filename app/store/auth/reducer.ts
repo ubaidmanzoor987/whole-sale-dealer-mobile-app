@@ -1,6 +1,6 @@
 import * as actions from './actionTypes';
 
-import { UserActions, UserState } from './types';
+import { IUserData, UserActions, UserState } from './types';
 
 const initialState: UserState = {
   pending: false,
@@ -11,12 +11,32 @@ const initialState: UserState = {
 
 export default (state = initialState, action: UserActions): UserState => {
   switch (action.type) {
-    case actions.Fetch_User_Request:
+    case actions.Fetch_User_Create_Request:
       return {
         ...state,
         pending: true,
       };
-    case actions.Fetch_User_Success:
+    case actions.Fetch_User_Create_Success:
+      return {
+        ...state,
+        pending: false,
+        user: {} as IUserData,
+        message: action.payload.message,
+        error: null,
+      };
+    case actions.Fetch_User_Create_Failure:
+      return {
+        ...state,
+        pending: false,
+        user: {} as IUserData,
+        error: action.payload.error,
+      };
+    case actions.Fetch_User_Login_Request:
+      return {
+        ...state,
+        pending: true,
+      };
+    case actions.Fetch_User_Login_Success:
       return {
         ...state,
         pending: false,
@@ -24,7 +44,7 @@ export default (state = initialState, action: UserActions): UserState => {
         message: action.payload.message,
         error: null,
       };
-    case actions.Fetch_User_Failure:
+    case actions.Fetch_User_Login_Failure:
       return {
         ...state,
         pending: false,

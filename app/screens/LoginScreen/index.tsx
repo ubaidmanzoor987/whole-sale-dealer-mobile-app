@@ -10,9 +10,8 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
-
-import { fetchUserRequest } from '@app/store/auth/actions';
-import { Text, View } from '@app/screens/Themed';
+import { fetchUserLoginRequest } from '@app/store/auth/actions';
+import { Image, Text, View } from '@app/screens/Themed';
 
 import {
   getErrorSelector,
@@ -87,7 +86,7 @@ function LoginScreen({
         password: password,
         user_type: usertype,
       };
-      dispatch(fetchUserRequest(data));
+      dispatch(fetchUserLoginRequest(data));
       const user_type = JSON.stringify(usertype);
       await AsyncStorage.setItem('user_type', user_type);
     } else if (username.length === 0) {
@@ -156,6 +155,11 @@ function LoginScreen({
               borderColor: focusUserName ? 'blue' : 'black',
             }}
           >
+            <FontAwesome
+              name="user"
+              size={24}
+              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
+            />
             <TextInputNative
               onFocus={toggleFocusUserName}
               onChangeText={handleUsername}
@@ -174,6 +178,11 @@ function LoginScreen({
               borderColor: focusPassword ? 'blue' : 'black',
             }}
           >
+            <MaterialCommunityIcons
+              name="lock"
+              size={24}
+              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
+            />
             <TextInputNative
               ref={(input) => {
                 passwordFocusField = input;

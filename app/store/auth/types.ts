@@ -17,9 +17,45 @@ export interface IUserData {
 }
 export interface IUser {
   data?: IUserData;
+  message: string;
 }
 
-export interface requestUser {
+// Sign Up Types
+
+export interface requestUserCreate {
+  user_name: string;
+  shop_name: string;
+  email: string;
+  password: string;
+  user_type: string;
+}
+
+export interface FetchUserCreateSuccessPayload {
+  message: string;
+  data: any | null;
+}
+
+export interface FetchUserCreateFailurePayload {
+  error: string;
+}
+
+export interface FetchUserCreateRequest {
+  type: typeof actions.Fetch_User_Create_Request;
+  payload: requestUserCreate;
+}
+
+export type FetchUserCreateSuccess = {
+  type: typeof actions.Fetch_User_Create_Success;
+  payload: FetchUserCreateSuccessPayload;
+};
+
+export type FetchUserCreateFailure = {
+  type: typeof actions.Fetch_User_Create_Failure;
+  payload: FetchUserCreateFailurePayload;
+};
+
+// Login Types
+export interface requestUserLogin {
   user_name: string;
   password: string;
   user_type: string;
@@ -32,28 +68,28 @@ export interface UserState {
   error: string | null;
 }
 
-export interface FetchUserSuccessPayload {
+export interface FetchUserLoginSuccessPayload {
   user: IUserData;
   message: string;
 }
 
-export interface FetchUserFailurePayload {
+export interface FetchUserLoginFailurePayload {
   error: string;
 }
 
-export interface FetchUserRequest {
-  type: typeof actions.Fetch_User_Request;
-  payload: requestUser;
+export interface FetchUserLoginRequest {
+  type: typeof actions.Fetch_User_Login_Request;
+  payload: requestUserLogin;
 }
 
-export type FetchUserSuccess = {
-  type: typeof actions.Fetch_User_Success;
-  payload: FetchUserSuccessPayload;
+export type FetchUserLoginSuccess = {
+  type: typeof actions.Fetch_User_Login_Success;
+  payload: FetchUserLoginSuccessPayload;
 };
 
-export type FetchUserFailure = {
-  type: typeof actions.Fetch_User_Failure;
-  payload: FetchUserFailurePayload;
+export type FetchUserLoginFailure = {
+  type: typeof actions.Fetch_User_Login_Failure;
+  payload: FetchUserLoginFailurePayload;
 };
 
 // Logout Types  Start From Here
@@ -88,9 +124,12 @@ export type FetchUserLogoutFailure = {
 };
 
 export type UserActions =
-  | FetchUserRequest
-  | FetchUserSuccess
-  | FetchUserFailure
+  | FetchUserCreateRequest
+  | FetchUserCreateSuccess
+  | FetchUserCreateFailure
+  | FetchUserLoginRequest
+  | FetchUserLoginSuccess
+  | FetchUserLoginFailure
   | FetchUserLogoutRequest
   | FetchUserLogoutSuccess
   | FetchUserLogoutFailure;
