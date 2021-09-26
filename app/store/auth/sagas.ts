@@ -4,6 +4,7 @@ import { all, call, put, takeLatest } from 'redux-saga/effects';
 import * as actions from './actions';
 import {
   Fetch_User_Create_Request,
+  Fetch_User_Forget_Request,
   Fetch_User_Login_Request,
   Fetch_User_Logout_Request,
 } from './actionTypes';
@@ -15,22 +16,32 @@ import {
   FetchUserCreateRequest,
   FetchUserLoginRequest,
   FetchUserLogoutRequest,
+  FetchUserForgetRequest,
+  requestUserForget
 } from './types';
 import { ENV_VAR } from '@app/utils/environments';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const userLogin = (body: requestUserLogin) =>
-  axios.post<IUser>(ENV_VAR.baseUrl + 'shopkeeper/login?t=' + new Date(), body);
+  axios.post<IUser>(ENV_VAR.baseUrl + 'shopkeeper/login', body);
 
 const userLogout = (body: requestUserLogout) =>
   axios.post<IUser>(
-    ENV_VAR.baseUrl + 'shopkeeper/logout?t=' + new Date(),
+    ENV_VAR.baseUrl + 'shopkeeper/logout',
     body
   );
 
+//Forget Password
+const userForget = (body: requestUserForget) =>
+  axios.post<IUser>(
+    ENV_VAR.baseUrl + 'shopkeeper/forgetPassword',
+    body
+  ); 
+
 const userCreate = (body: requestUserCreate) =>
   axios.post<IUser>(
-    ENV_VAR.baseUrl + 'shopkeeper/insert_shopkeeper?t=' + new Date(),
+    ENV_VAR.baseUrl + 'shopkeeper/insert_shopkeeper',
     body
   );
 
@@ -119,10 +130,31 @@ function* fetchUserLogoutSaga(action: FetchUserLogoutRequest): any {
   }
 }
 
+function* fetchUserForgetSaga(action: FetchUserForgetRequest): any {
+  try {
+    const response = yield call(userForget, action.payload);
+
+    yield put(
+      actions.fetchUserForgetSuccess({
+        message: response.data.message,
+        data: {},
+      })
+    );
+    yield call(clearData);
+  } catch (e: any) {
+    yield put(
+      actions.fetchUserForgetFailure({
+        error: e.message,
+      })
+    );
+  }
+}
+
 function* authSaga() {
   yield all([takeLatest(Fetch_User_Create_Request, fetchUserCreateSaga)]);
   yield all([takeLatest(Fetch_User_Login_Request, fetchUserLoginSaga)]);
   yield all([takeLatest(Fetch_User_Logout_Request, fetchUserLogoutSaga)]);
+  yield all([takeLatest(Fetch_User_Forget_Request, fetchUserForgetSaga)])
 }
 
 export default authSaga;

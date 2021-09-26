@@ -19,6 +19,9 @@ import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import BottomTabNavigator from '@app/navigation/BottomTabNavigator';
 import LinkingConfiguration from '@app/navigation/LinkingConfiguration';
 import SignUpScreen from '@app/screens/SignUpScreen';
+//Forget Screen
+import ForgetScreen from '@app/screens/ForgetPassword';
+import ResetPassword from '@app/screens/ResetPassword';
 
 export default function Navigation({
   colorScheme,
@@ -44,6 +47,8 @@ function RootNavigator() {
       <Stack.Screen name="LogIn" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="Home" component={BottomTabNavigator} />
+      <Stack.Screen name="ForgetPassword" component={ForgetScreen}/>
+      <Stack.Screen name="ResetPassword" component={ResetPassword}/>
       <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}

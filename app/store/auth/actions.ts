@@ -66,3 +66,26 @@ export const fetchUserLogoutFailure = (
   type: actions.Fetch_User_Logout_Failure,
   payload,
 });
+
+// Forget Actions
+export const fetchUserForgetRequest = (
+  data: types.requestUserForget
+): types.FetchUserForgetRequest => ({
+  type: actions.Fetch_User_Forget_Request,
+  payload: data,
+});
+
+export const fetchUserForgetSuccess = (
+  payload: types.FetchUserForgetSuccessPayload
+): types.FetchUserForgetSuccess => ({
+  type: actions.Fetch_User_Forget_Success,
+  payload,
+});
+
+export const fetchUserForgetFailure = (
+  payload: types.FetchUserForgetFailurePayload
+): types.FetchUserForgetFailure => ({
+  type: actions.Fetch_User_Forget_Failure,
+  payload,
+});
+

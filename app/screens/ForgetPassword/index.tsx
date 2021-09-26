@@ -12,7 +12,7 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
-import { fetchUserLoginRequest } from '@app/store/auth/actions';
+import { fetchUserForgetRequest } from '@app/store/forgetPassword/actions';
 import { Image, Text, View } from '@app/screens/Themed';
 
 import {
@@ -20,12 +20,13 @@ import {
   getPendingSelector,
   getUserSelector,
   getMessageSelector,
-} from '@app/store/auth/selector';
+} from '@app/store/forgetPassword/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'native-base';
 
-function LoginScreen({
+function ForgetScreen({
   navigation,
 }: StackScreenProps<RootStackParamList, 'NotFound'>) {
   const dispatch = useDispatch();
@@ -37,6 +38,11 @@ function LoginScreen({
   const [focusUserName, setFocusUserName] = useState<boolean>(false);
   const [focusPassword, setFocusPassword] = useState<boolean>(false);
 
+  //Confirm Password
+  const [focusConfrimPassword, setFocusConfirmPassword] = useState<boolean>(false);
+  const [confrimPassword, setConfrimPassword] = useState<String>('');
+  const [visibleConfrimPassword, setVisibleConfirmPassword] = useState<boolean>(false);
+
   const [usertype, setUserType] = useState<string>('shop_keeper');
 
   const userData = useSelector(getUserSelector);
@@ -47,34 +53,10 @@ function LoginScreen({
   let passwordFocusField = null as any;
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
-        const result = JSON.parse(jsonValue);
-        console.log('mount login screen');
-        // if (result.type === 'success') {
-        //   const data = {
-        //     email: result.user.email,
-        //     displayName: result.user.givenName + ' ' + result.user.familyName,
-        //     givenName: result.user.givenName,
-        //     familyName: result.user.familyName,
-        //     googleId: result.user.id,
-        //     imageUrl: result.user.photoUrl,
-        //   } as requestUser;
-        //   dispatch(fetchUserRequest(data));
-        // }
-      } catch (e) {
-        // error reading value
-      }
-    };
-    getData();
-
-    if (message == 'Login Successfully') {
-      navigation.navigate('Home');
-      return;
+    if(userData.email !== ''){
+      navigation.navigate('ResetPassword')
     }
-  }, [message]);
-
+  },[userData])
   useEffect(() => {
     if (errorMessageServer) {
       setErrorMessage(errorMessageServer);
@@ -82,25 +64,23 @@ function LoginScreen({
   }, [errorMessageServer]);
 
   const handleLogin = async () => {
-    if (username.length !== 0 && password.length !== 0) {
+    // Alert(`User name == ${username.length}`);
+    if (username.length !== 0 ) {
+      // navigation.navigate('ResetPassword');
       const data = {
-        user_name: username,
-        password: password,
-        user_type: usertype,
+        email: username,
       };
-      dispatch(fetchUserLoginRequest(data));
-      const user_type = JSON.stringify(usertype);
-      await AsyncStorage.setItem('user_type', user_type);
+      dispatch(fetchUserForgetRequest(data));
     } else if (username.length === 0) {
-      setErrorMessage('User Name is Required');
-    } else if (password.length === 0) {
-      setErrorMessage('Password is Required');
-    }
+      setErrorMessage('Email is Required');
+    } 
   };
+  console.log("data",userData, isPending, errorMessageServer, message );
+  
 
   const handleUsername = (text: string) => {
     if (text.length === 0) {
-      setErrorMessage('User Name is Required ');
+      setErrorMessage('Email is Required ');
     } else {
       setErrorMessage('');
       setUsername(text);
@@ -146,20 +126,15 @@ function LoginScreen({
     navigation.navigate('SignUp');
   };
 
-  const forgetScreen = () => {
-    // alert("test");
-    navigation.navigate('ForgetPassword');
-  }
-
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.titleWelcomeText}>Welcome!</Text>
-        <Text style={styles.titleSignText}>Sign In and get Started</Text>
+        <Text style={styles.titleSignText}>Forget Password</Text>
       </View>
       <View style={styles.fieldsView}>
         <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>User Name</Text>
+          <Text style={styles.labelText}>Email</Text>
           <View
             style={{
               ...styles.inputFieldSubView,
@@ -174,14 +149,15 @@ function LoginScreen({
             <TextInputNative
               onFocus={toggleFocusUserName}
               onChangeText={handleUsername}
-              placeholder="Enter Your User name"
+              placeholder="Enter Your Email"
               onSubmitEditing={setfocusPassword}
               style={{ width: '85%' }}
-              maxLength={15}
+              keyboardType="email-address"
+              // maxLength={15}
             />
           </View>
         </View>
-        <View style={styles.inputFieldsMainView}>
+        {/* <View style={styles.inputFieldsMainView}>
           <Text style={styles.labelText}>Password</Text>
           <View
             style={{
@@ -213,21 +189,21 @@ function LoginScreen({
               onPress={togglePass}
             />
           </View>
-        </View>
+        </View> */}
 
         {errorMessage ? (
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : (
           <></>
         )}
-        <View style={styles.clientView}>
+        {/* <View style={styles.clientView}>
           <Text style={styles.clientViewText}>Switch To Client</Text>
           <Switch
             value={isSwitchOn}
             onValueChange={onToggleSwitch}
             thumbColor="#5460E0"
           />
-        </View>
+        </View> */}
         <View style={styles.loginButtonView}>
           {isPending ? (
             <ActivityIndicator
@@ -238,27 +214,22 @@ function LoginScreen({
           ) : (
             <Button
               style={styles.loginButton}
-              icon={() => (
-                <MaterialCommunityIcons name="login" size={20} color="white" />
-              )}
+              // icon={() => (
+              //   <MaterialCommunityIcons name="forget" size={20} color="white" />
+              // )}
               mode="contained"
               onPress={handleLogin}
             >
-              <Text style={styles.loginButtonText}>Login</Text>
+              <Text style={styles.loginButtonText}>Submit</Text>
             </Button>
           )}
         </View>
-        <View style={styles.forgotView}>
-          {/* <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
+        {/* <View style={styles.forgotView}>
+          <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
             Forgot Password
-          </Text> */}
-          <TouchableOpacity onPress={forgetScreen}>
-              <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
-                Forget Password
-              </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.socialView}>
+          </Text>
+        </View> */}
+        {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
               source={require('@app/assets/images/google.png')}
@@ -281,21 +252,21 @@ function LoginScreen({
           ) : (
             <></>
           )}
-        </View>
-        <Button
+        </View> */}
+        {/* <Button
           style={styles.signupButton}
           icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
           mode="contained"
           onPress={handleSignUp}
         >
           <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Button>
+        </Button> */}
       </View>
     </KeyboardAwareScrollView>
   );
 }
 
-export default React.memo(LoginScreen);
+export default React.memo(ForgetScreen);
 
 const styles = StyleSheet.create({
   container: {

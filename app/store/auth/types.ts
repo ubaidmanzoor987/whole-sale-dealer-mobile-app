@@ -123,6 +123,35 @@ export type FetchUserLogoutFailure = {
   payload: FetchUserLogoutFailurePayload;
 };
 
+//Forget Password
+
+export interface requestUserForget {
+  email: string;
+}
+
+export interface FetchUserForgetSuccessPayload {
+  message: string;
+  data: any | null;
+}
+
+export interface FetchUserForgetFailurePayload {
+  error: string;
+}
+
+export interface FetchUserForgetRequest {
+  type: typeof actions.Fetch_User_Forget_Request;
+  payload: requestUserForget;
+}
+
+export type FetchUserForgetSuccess = {
+  type: typeof actions.Fetch_User_Forget_Success;
+  payload: FetchUserForgetSuccessPayload;
+};
+
+export type FetchUserForgetFailure = {
+  type: typeof actions.Fetch_User_Forget_Failure;
+  payload: FetchUserForgetFailurePayload;
+};
 export type UserActions =
   | FetchUserCreateRequest
   | FetchUserCreateSuccess
@@ -132,4 +161,8 @@ export type UserActions =
   | FetchUserLoginFailure
   | FetchUserLogoutRequest
   | FetchUserLogoutSuccess
-  | FetchUserLogoutFailure;
+  | FetchUserLogoutFailure
+  | FetchUserForgetRequest
+  | FetchUserForgetSuccess
+  | FetchUserForgetFailure;
+

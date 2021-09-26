@@ -24,18 +24,26 @@ import {
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'native-base';
 
-function LoginScreen({
+function ResetScreen({
   navigation,
 }: StackScreenProps<RootStackParamList, 'NotFound'>) {
   const dispatch = useDispatch();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+
   const [visiblePass, setVisiblePass] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [focusUserName, setFocusUserName] = useState<boolean>(false);
   const [focusPassword, setFocusPassword] = useState<boolean>(false);
+
+  //Confirm Password
+  const [focusConfrimPassword, setFocusConfirmPassword] = useState<boolean>(false);
+  const [confrimPassword, setConfrimPassword] = useState<String>('');
+  const [visibleConfrimPassword, setVisibleConfirmPassword] = useState<boolean>(false);
+  const [ConfirmPassword, setConfirmPassword] = useState<string>('');
 
   const [usertype, setUserType] = useState<string>('shop_keeper');
 
@@ -45,6 +53,7 @@ function LoginScreen({
   const message = useSelector(getMessageSelector);
 
   let passwordFocusField = null as any;
+  let ConfirmPasswordFocusField = null as any;
 
   useEffect(() => {
     const getData = async () => {
@@ -52,17 +61,6 @@ function LoginScreen({
         const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
         const result = JSON.parse(jsonValue);
         console.log('mount login screen');
-        // if (result.type === 'success') {
-        //   const data = {
-        //     email: result.user.email,
-        //     displayName: result.user.givenName + ' ' + result.user.familyName,
-        //     givenName: result.user.givenName,
-        //     familyName: result.user.familyName,
-        //     googleId: result.user.id,
-        //     imageUrl: result.user.photoUrl,
-        //   } as requestUser;
-        //   dispatch(fetchUserRequest(data));
-        // }
       } catch (e) {
         // error reading value
       }
@@ -81,8 +79,8 @@ function LoginScreen({
     }
   }, [errorMessageServer]);
 
-  const handleLogin = async () => {
-    if (username.length !== 0 && password.length !== 0) {
+  const handleSubmit = async () => {
+    if (confrimPassword.length !== 0 && password.length !== 0) {
       const data = {
         user_name: username,
         password: password,
@@ -91,8 +89,10 @@ function LoginScreen({
       dispatch(fetchUserLoginRequest(data));
       const user_type = JSON.stringify(usertype);
       await AsyncStorage.setItem('user_type', user_type);
-    } else if (username.length === 0) {
-      setErrorMessage('User Name is Required');
+    } else if(confrimPassword.length === 0 && password.length === 0){
+      setErrorMessage(`New Password is Required \n Confirm Password is Required`);
+    } else if (confrimPassword.length === 0) {
+      setErrorMessage('Confirm Password is Required');
     } else if (password.length === 0) {
       setErrorMessage('Password is Required');
     }
@@ -116,6 +116,15 @@ function LoginScreen({
     }
   };
 
+  const handleConfirmPassoword = (text: string) => {
+    if (text.length === 0) {
+      setErrorMessage('Confirm Password is Required ');
+    } else {
+      setErrorMessage('');
+      setConfirmPassword(text);
+    }
+  };
+
   const onToggleSwitch = () => {
     setIsSwitchOn(!isSwitchOn);
     if (isSwitchOn) {
@@ -128,9 +137,16 @@ function LoginScreen({
   const togglePass = () => {
     setVisiblePass(!visiblePass);
   };
+  
+  const toggleConfirmPass = () => {
+    setVisibleConfirmPassword(!visibleConfrimPassword);
+  };
   const setfocusPassword = () => {
     passwordFocusField.focus();
   };
+  const setfocusConfirmPassword = () => {
+    ConfirmPasswordFocusField.focus()
+  }
 
   const toggleFocusUserName = () => {
     setFocusUserName(true);
@@ -140,49 +156,27 @@ function LoginScreen({
   const toggleFocusPassword = () => {
     setFocusUserName(false);
     setFocusPassword(true);
+    setFocusConfirmPassword(false);
   };
+
+  const toggleFocusConfirmPassword = () => {
+    setFocusPassword(false);
+    setFocusConfirmPassword(true);
+  }
 
   const handleSignUp = () => {
     navigation.navigate('SignUp');
   };
 
-  const forgetScreen = () => {
-    // alert("test");
-    navigation.navigate('ForgetPassword');
-  }
-
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.titleWelcomeText}>Welcome!</Text>
-        <Text style={styles.titleSignText}>Sign In and get Started</Text>
+        <Text style={styles.titleSignText}>Reset Password</Text>
       </View>
       <View style={styles.fieldsView}>
         <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>User Name</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-              borderColor: focusUserName ? 'blue' : 'black',
-            }}
-          >
-            <FontAwesome
-              name="user"
-              size={24}
-              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
-            />
-            <TextInputNative
-              onFocus={toggleFocusUserName}
-              onChangeText={handleUsername}
-              placeholder="Enter Your User name"
-              onSubmitEditing={setfocusPassword}
-              style={{ width: '85%' }}
-              maxLength={15}
-            />
-          </View>
-        </View>
-        <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Password</Text>
+          <Text style={styles.labelText}>New Password</Text>
           <View
             style={{
               ...styles.inputFieldSubView,
@@ -201,7 +195,7 @@ function LoginScreen({
               onFocus={toggleFocusPassword}
               onChangeText={handlePassoword}
               placeholder="Enter Your Passwod"
-              onSubmitEditing={handleLogin}
+              onSubmitEditing={setfocusConfirmPassword}
               secureTextEntry={!visiblePass}
               style={{ width: '80%' }}
               maxLength={15}
@@ -214,20 +208,53 @@ function LoginScreen({
             />
           </View>
         </View>
+        <View style={styles.inputFieldsMainView}>
+          <Text style={styles.labelText}>New Password</Text>
+          <View
+            style={{
+              ...styles.inputFieldSubView,
+              borderColor: focusPassword ? 'blue' : 'black',
+            }}
+          >
+            <MaterialCommunityIcons
+              name="lock"
+              size={24}
+              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
+            />
+            <TextInputNative
+              ref={(input) => {
+                ConfirmPasswordFocusField = input;
+              }}
+              onFocus={toggleFocusConfirmPassword}
+              onChangeText={handleConfirmPassoword}
+              placeholder="Enter Your Confirm Passwod"
+              onSubmitEditing={handleSubmit}
+              secureTextEntry={!visibleConfrimPassword}
+              style={{ width: '80%' }}
+              maxLength={15}
+            />
+            <MaterialCommunityIcons
+              name={visibleConfrimPassword ? 'eye' : 'eye-off'}
+              size={20}
+              style={styles.icons}
+              onPress={toggleConfirmPass}
+            />
+          </View>
+        </View>
 
         {errorMessage ? (
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : (
           <></>
         )}
-        <View style={styles.clientView}>
+        {/* <View style={styles.clientView}>
           <Text style={styles.clientViewText}>Switch To Client</Text>
           <Switch
             value={isSwitchOn}
             onValueChange={onToggleSwitch}
             thumbColor="#5460E0"
           />
-        </View>
+        </View> */}
         <View style={styles.loginButtonView}>
           {isPending ? (
             <ActivityIndicator
@@ -238,27 +265,22 @@ function LoginScreen({
           ) : (
             <Button
               style={styles.loginButton}
-              icon={() => (
-                <MaterialCommunityIcons name="login" size={20} color="white" />
-              )}
+              // icon={() => (
+              //   <MaterialCommunityIcons name="forget" size={20} color="white" />
+              // )}
               mode="contained"
-              onPress={handleLogin}
+              onPress={handleSubmit}
             >
-              <Text style={styles.loginButtonText}>Login</Text>
+              <Text style={styles.loginButtonText}>Change Password</Text>
             </Button>
           )}
         </View>
-        <View style={styles.forgotView}>
-          {/* <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
+        {/* <View style={styles.forgotView}>
+          <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
             Forgot Password
-          </Text> */}
-          <TouchableOpacity onPress={forgetScreen}>
-              <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
-                Forget Password
-              </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.socialView}>
+          </Text>
+        </View> */}
+        {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
               source={require('@app/assets/images/google.png')}
@@ -281,21 +303,21 @@ function LoginScreen({
           ) : (
             <></>
           )}
-        </View>
-        <Button
+        </View> */}
+        {/* <Button
           style={styles.signupButton}
           icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
           mode="contained"
           onPress={handleSignUp}
         >
           <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Button>
+        </Button> */}
       </View>
     </KeyboardAwareScrollView>
   );
 }
 
-export default React.memo(LoginScreen);
+export default React.memo(ResetScreen);
 
 const styles = StyleSheet.create({
   container: {
