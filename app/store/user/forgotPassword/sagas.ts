@@ -6,43 +6,35 @@ import {
   Fetch_User_Forget_Request,
 } from './actionTypes';
 import {
-  IUser,
-  FetchUserForgetRequest,
-  requestUserForget
+  requestUserForget,
+  responseUserForget,
+  FetchUserForgetRequest
 } from './types';
 import { ENV_VAR } from '@app/utils/environments';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-//Forget Password
 const userForget = (body: requestUserForget) =>
-  axios.post<IUser>(
-    ENV_VAR.baseUrl + 'shopkeeper/forgetPassword',
-    body
-  ); 
+  axios.post<responseUserForget>(ENV_VAR.baseUrl + 'user/insert_shopkeeper', body);
 
 function* fetchUserForgetSaga(action: FetchUserForgetRequest): any {
   try {
     const response = yield call(userForget, action.payload);
-    console.log('iuihiuhihu',response.data);
-    
     yield put(
       actions.fetchUserForgetSuccess({
-        message: response.data.message,
-        data: response.data.data,
+        response: response.data
       })
     );
   } catch (e: any) {
+    console.log('response', e.response);
     yield put(
       actions.fetchUserForgetFailure({
-        error: e.message,
+        response: e.response ? e.response.data : { error: e.message },
       })
     );
   }
 }
 
-function* ForgetSaga() {
-  yield all([takeLatest(Fetch_User_Forget_Request, fetchUserForgetSaga)])
+function* ForgetUserSaga() {
+  yield all([takeLatest(Fetch_User_Forget_Request, fetchUserForgetSaga)]);
 }
 
-export default ForgetSaga;
+export default ForgetUserSaga;

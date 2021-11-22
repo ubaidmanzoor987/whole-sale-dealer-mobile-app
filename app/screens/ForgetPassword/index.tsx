@@ -12,15 +12,15 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
-import { fetchUserForgetRequest } from '@app/store/forgetPassword/actions';
+import { fetchUserForgetRequest } from '@app/store/user/forgotPassword/actions';
 import { Image, Text, View } from '@app/screens/Themed';
 
 import {
   getErrorSelector,
   getPendingSelector,
-  getUserSelector,
+  getDataSelector,
   getMessageSelector,
-} from '@app/store/forgetPassword/selector';
+} from '@app/store/user/forgotPassword/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -45,7 +45,7 @@ function ForgetScreen({
 
   const [usertype, setUserType] = useState<string>('shop_keeper');
 
-  const userData = useSelector(getUserSelector);
+  const userData = useSelector(getDataSelector);
   const isPending = useSelector(getPendingSelector);
   const errorMessageServer = useSelector(getErrorSelector);
   const message = useSelector(getMessageSelector);

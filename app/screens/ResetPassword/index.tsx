@@ -12,15 +12,15 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
-import { fetchUserLoginRequest } from '@app/store/auth/actions';
+import { fetchUserLoginRequest } from '@app/store/user/login/actions';
 import { Image, Text, View } from '@app/screens/Themed';
 
 import {
   getErrorSelector,
   getPendingSelector,
-  getUserSelector,
+  getDataSelector,
   getMessageSelector,
-} from '@app/store/auth/selector';
+} from '@app/store/user/login/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,7 +47,7 @@ function ResetScreen({
 
   const [usertype, setUserType] = useState<string>('shop_keeper');
 
-  const userData = useSelector(getUserSelector);
+  const userData = useSelector(getDataSelector);
   const isPending = useSelector(getPendingSelector);
   const errorMessageServer = useSelector(getErrorSelector);
   const message = useSelector(getMessageSelector);
