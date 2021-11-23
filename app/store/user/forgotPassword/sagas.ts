@@ -13,7 +13,7 @@ import {
 import { ENV_VAR } from '@app/utils/environments';
 
 const userForget = (body: requestUserForget) =>
-  axios.post<responseUserForget>(ENV_VAR.baseUrl + 'user/insert_shopkeeper', body);
+  axios.post<responseUserForget>(ENV_VAR.baseUrl + 'user/forgetPassword', body);
 
 function* fetchUserForgetSaga(action: FetchUserForgetRequest): any {
   try {

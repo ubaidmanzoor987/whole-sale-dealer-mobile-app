@@ -13,7 +13,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 import { fetchUserForgetRequest } from '@app/store/user/forgotPassword/actions';
-import { Image, Text, View } from '@app/screens/Themed';
+import { Text, View } from '@app/screens/Themed';
 
 import {
   getErrorSelector,
@@ -22,9 +22,7 @@ import {
   getMessageSelector,
 } from '@app/store/user/forgotPassword/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
-import { Switch } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'native-base';
+
 
 function ForgetScreen({
   navigation,
@@ -36,14 +34,6 @@ function ForgetScreen({
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [focusUserName, setFocusUserName] = useState<boolean>(false);
-  const [focusPassword, setFocusPassword] = useState<boolean>(false);
-
-  //Confirm Password
-  const [focusConfrimPassword, setFocusConfirmPassword] = useState<boolean>(false);
-  const [confrimPassword, setConfrimPassword] = useState<String>('');
-  const [visibleConfrimPassword, setVisibleConfirmPassword] = useState<boolean>(false);
-
-  const [usertype, setUserType] = useState<string>('shop_keeper');
 
   const userData = useSelector(getDataSelector);
   const isPending = useSelector(getPendingSelector);
@@ -87,43 +77,12 @@ function ForgetScreen({
     }
   };
 
-  const handlePassoword = (text: string) => {
-    if (text.length === 0) {
-      setErrorMessage('Password is Required ');
-    } else {
-      setErrorMessage('');
-      setPassword(text);
-    }
-  };
-
-  const onToggleSwitch = () => {
-    setIsSwitchOn(!isSwitchOn);
-    if (isSwitchOn) {
-      setUserType('shop_keeper');
-    } else {
-      setUserType('customer');
-    }
-  };
-
-  const togglePass = () => {
-    setVisiblePass(!visiblePass);
-  };
   const setfocusPassword = () => {
     passwordFocusField.focus();
   };
 
   const toggleFocusUserName = () => {
     setFocusUserName(true);
-    setFocusPassword(false);
-  };
-
-  const toggleFocusPassword = () => {
-    setFocusUserName(false);
-    setFocusPassword(true);
-  };
-
-  const handleSignUp = () => {
-    navigation.navigate('SignUp');
   };
 
   return (

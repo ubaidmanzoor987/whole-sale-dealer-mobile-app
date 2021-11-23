@@ -1,4 +1,5 @@
-import axios from 'axios';
+// import axios from 'axios';
+import axios from '../../../api/axios';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 
 import * as actions from './actions';
@@ -12,9 +13,8 @@ import {
   FetchUserLoginRequest
 } from './types';
 import { ENV_VAR } from '@app/utils/environments';
-
 const userLogin = (body: requestUserLogin) =>
-  axios.post<IUser>(ENV_VAR.baseUrl + 'user/login', body);
+  axios.post<IUser>( 'user/login', body);
 
 function* fetchUserLoginSaga(action: FetchUserLoginRequest): any {
   try {
