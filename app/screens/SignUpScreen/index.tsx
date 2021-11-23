@@ -8,33 +8,36 @@ import {
   Platform,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { TextInput, Button } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 
-import { fetchUserCreateRequest } from '@app/store/auth/actions';
+import { fetchUserCreateRequest } from '@app/store/user/register/actions';
 import { Image, Text, View } from '@app/screens/Themed';
 
 import {
   getErrorSelector,
   getPendingSelector,
-  getUserSelector,
+  getDataSelector,
   getMessageSelector,
-} from '@app/store/auth/selector';
+} from '@app/store/user/register/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import ToastScreen from '@app/screens/ToastScreen';
 
 function SignUpScreen({
   navigation,
 }: StackScreenProps<RootStackParamList, 'NotFound'>) {
   const dispatch = useDispatch();
+  const isPending = useSelector(getPendingSelector);
+  const errorMessageServer = useSelector(getErrorSelector);
+  const data = useSelector(getDataSelector);
+
   const [user_name, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [shop_name, setShopName] = useState<string>('');
-
   const [visiblePass, setVisiblePass] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSwitchOn, setIsSwitchOn] = useState(false);
@@ -42,29 +45,28 @@ function SignUpScreen({
   const [focusPassword, setFocusPassword] = useState<boolean>(false);
   const [focusEmail, setFocusEmail] = useState<boolean>(false);
   const [focusShopName, setFocusShopName] = useState<boolean>(false);
-
   const [user_type, setUserType] = useState<string>('shop_keeper');
-
-  const isPending = useSelector(getPendingSelector);
-  const errorMessageServer = useSelector(getErrorSelector);
-  const message = useSelector(getMessageSelector);
+  const [visibleToast, setVisibleToast] = useState<boolean>(false);
 
   let userNameFocusField = null as any;
   let passwordFocusField = null as any;
   let shopNameFocusField = null as any;
 
   useEffect(() => {
-    if (message == 'Shop keeper Inserted Successfully') {
-      // navigation.navigate('LogIn');
-      return;
-    }
-  }, [message]);
-
-  useEffect(() => {
-    if (errorMessageServer) {
+    if (errorMessageServer && errorMessageServer.length > 0) {
       setErrorMessage(errorMessageServer);
     }
   }, [errorMessageServer]);
+
+  useEffect(() => {
+    if (data && data.user_name) {
+      setUsername('');
+      setPassword('');
+      setEmail('');
+      setShopName('');
+      navigation.navigate('LogIn');
+    }
+  }, [data]);
 
   const handleLogin = () => {
     navigation.navigate('LogIn');
@@ -284,7 +286,6 @@ function SignUpScreen({
                 onSubmitEditing={setfocusPassword}
                 style={{ marginLeft: '11%' }}
                 maxLength={30}
-                multiline={true}
               />
             </View>
           </View>
@@ -382,6 +383,7 @@ function SignUpScreen({
         >
           <Text style={styles.loginButtonText}>Sign In</Text>
         </Button>
+      {/* {visibleToast && <ToastScreen message="Successfully Sign Up" />} */}
       </View>
     </KeyboardAwareScrollView>
   );

@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux';
 
-import authReducer from './auth/reducer';
-import ForgetReducer from './forgetPassword/reducer'
-import { reducer as formReducer } from 'redux-form';
+import registerReducer from './user/register/reducer';
+import loginReducer from './user/login/reducer';
+import forgetReducer from './user/forgotPassword/reducer'
 
 const rootReducer = combineReducers({
-  auth: authReducer,
-  form: formReducer,
-  ForgetReducer
+  register: registerReducer,
+  login: loginReducer,
+  forget: forgetReducer
 });
 
 export type AppState = ReturnType<typeof rootReducer>;
