@@ -12,7 +12,7 @@ export interface IUser {
   address: string;
   image: string;
   email: string;
-  shopkeeper_id: number;
+  id: number;
   token: string;
 }
 

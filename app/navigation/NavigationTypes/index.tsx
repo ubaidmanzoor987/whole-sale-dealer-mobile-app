@@ -14,13 +14,15 @@ export type RootStackParamList = {
 };
 
 export type BottomTabParamList = {
-  Home: undefined;
+  Brand: undefined;
+  AddBrand: undefined;
   TabTwo: undefined;
   TabThree: undefined;
 };
 
-export type HomeParamList = {
-  HomeScreen: undefined;
+export type BrandParamList = {
+  BrandScreen: undefined;
+  AddBrandScreen: undefined;
 };
 
 export type TabTwoParamList = {

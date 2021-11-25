@@ -5,11 +5,13 @@ import * as React from 'react';
 
 import Colors from '@app/constants/Colors';
 import useColorScheme from '@app/hooks/useColorScheme';
-import HomeScreen from '@app/screens/HomeScreen';
+// import HomeScreen from '@app/screens/HomeScreen';
+import BrandScreen from '@app/screens/BrandScreen';
+import AddBrandScreen from '@app/screens/AddBrandScreen';
 import TabTwoScreen from '@app/screens/BrandScreen';
 import {
   BottomTabParamList,
-  HomeParamList,
+  BrandParamList,
   TabTwoParamList,
 } from '../NavigationTypes';
 
@@ -20,12 +22,19 @@ export default function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="Home"
+      initialRouteName="Brand"
       tabBarOptions={{ activeTintColor: Colors[colorScheme]?.tint }}
     >
       <BottomTab.Screen
-        name="Home"
+        name="Brand"
         component={HomeNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="AddBrand"
+        component={AddBrandNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
@@ -58,12 +67,20 @@ function TabBarIcon(props: {
   return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
 }
 
-const HomeStack = createStackNavigator<HomeParamList>();
+const HomeStack = createStackNavigator<BrandParamList>();
 
 function HomeNavigator() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStack.Screen name="HomeScreen" component={HomeScreen} />
+      <HomeStack.Screen name="BrandScreen" component={BrandScreen} />
+    </HomeStack.Navigator>
+  );
+}
+
+function AddBrandNavigator() {
+  return(
+    <HomeStack.Navigator screenOptions={{ headerShown: true }}>
+      <HomeStack.Screen name="AddBrandScreen" component={AddBrandScreen} />
     </HomeStack.Navigator>
   );
 }
