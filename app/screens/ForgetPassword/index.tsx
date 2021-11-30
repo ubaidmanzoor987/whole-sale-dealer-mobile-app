@@ -43,7 +43,7 @@ function ForgetScreen({
   let passwordFocusField = null as any;
 
   useEffect(() => {
-    if(userData.email !== ''){
+    if(userData?.email !== ''){
       navigation.navigate('ResetPassword')
     }
   },[userData])
@@ -116,53 +116,12 @@ function ForgetScreen({
             />
           </View>
         </View>
-        {/* <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Password</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-              borderColor: focusPassword ? 'blue' : 'black',
-            }}
-          >
-            <MaterialCommunityIcons
-              name="lock"
-              size={24}
-              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
-            />
-            <TextInputNative
-              ref={(input) => {
-                passwordFocusField = input;
-              }}
-              onFocus={toggleFocusPassword}
-              onChangeText={handlePassoword}
-              placeholder="Enter Your Passwod"
-              onSubmitEditing={handleLogin}
-              secureTextEntry={!visiblePass}
-              style={{ width: '80%' }}
-              maxLength={15}
-            />
-            <MaterialCommunityIcons
-              name={visiblePass ? 'eye' : 'eye-off'}
-              size={20}
-              style={styles.icons}
-              onPress={togglePass}
-            />
-          </View>
-        </View> */}
-
+        
         {errorMessage ? (
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : (
           <></>
         )}
-        {/* <View style={styles.clientView}>
-          <Text style={styles.clientViewText}>Switch To Client</Text>
-          <Switch
-            value={isSwitchOn}
-            onValueChange={onToggleSwitch}
-            thumbColor="#5460E0"
-          />
-        </View> */}
         <View style={styles.loginButtonView}>
           {isPending ? (
             <ActivityIndicator
@@ -183,43 +142,6 @@ function ForgetScreen({
             </Button>
           )}
         </View>
-        {/* <View style={styles.forgotView}>
-          <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
-            Forgot Password
-          </Text>
-        </View> */}
-        {/* <View style={styles.socialView}>
-          <TouchableOpacity style={styles.socialTouchable}>
-            <Image
-              source={require('@app/assets/images/google.png')}
-              style={styles.imageStyle}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialTouchable}>
-            <Image
-              source={require('@app/assets/images/fb.png')}
-              style={styles.imageStyle}
-            />
-          </TouchableOpacity>
-          {Platform.OS === 'ios' ? (
-            <TouchableOpacity>
-              <Image
-                source={require('@app/assets/images/apple.png')}
-                style={styles.imageStyle}
-              />
-            </TouchableOpacity>
-          ) : (
-            <></>
-          )}
-        </View> */}
-        {/* <Button
-          style={styles.signupButton}
-          icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
-          mode="contained"
-          onPress={handleSignUp}
-        >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Button> */}
       </View>
     </KeyboardAwareScrollView>
   );

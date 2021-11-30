@@ -79,7 +79,7 @@ function HomeNavigator() {
 
 function AddBrandNavigator() {
   return(
-    <HomeStack.Navigator screenOptions={{ headerShown: true }}>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="AddBrandScreen" component={AddBrandScreen} />
     </HomeStack.Navigator>
   );

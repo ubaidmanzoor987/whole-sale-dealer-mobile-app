@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ENV_VAR } from '@app/utils/environments';
+import { IUser } from '@app/store/user/login/types';
 
 
 const instance = axios.create({
@@ -9,20 +10,12 @@ const instance = axios.create({
 
   instance.interceptors.request.use(async function (config) {
 
-    // console.log(config);
-    
     const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
-    let user = null;
-    if(jsonValue){
+    let user = {} as IUser;
+    if(jsonValue !== ''){
         user = JSON.parse(jsonValue);
+        config.headers['x-access-tokens'] = user?.token;
     }
-    // let user = "123";
-    console.log(user, 'lkjljljl');
-    
-    // if(user != ''){
-    //     config.headers['x-access-tokens'] = user.token;
-    // }
-   
     return config;
   }, function (error) {
     // Do something with request error
