@@ -14,6 +14,7 @@ import {
   BrandParamList,
   TabTwoParamList,
 } from '../NavigationTypes';
+import ProfileScreen from '@app/screens/ProfileScreen';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -56,6 +57,14 @@ export default function BottomTabNavigator() {
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
+
+      <BottomTab.Screen
+        name="Profle"
+        component={ProfileNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
+        }}
+      />
     </BottomTab.Navigator>
   );
 }
@@ -81,6 +90,14 @@ function AddBrandNavigator() {
   return(
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="AddBrandScreen" component={AddBrandScreen} />
+    </HomeStack.Navigator>
+  );
+}
+
+function ProfileNavigator() {
+  return(
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="ProfileScreen" component={ProfileScreen} />
     </HomeStack.Navigator>
   );
 }

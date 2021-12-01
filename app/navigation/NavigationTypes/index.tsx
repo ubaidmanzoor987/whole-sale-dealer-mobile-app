@@ -18,11 +18,13 @@ export type BottomTabParamList = {
   AddBrand: undefined;
   TabTwo: undefined;
   TabThree: undefined;
+  Profle: undefined
 };
 
 export type BrandParamList = {
   BrandScreen: undefined;
   AddBrandScreen: undefined;
+  ProfileScreen: undefined;
 };
 
 export type TabTwoParamList = {
