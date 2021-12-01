@@ -1,23 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
-  TextInput as TextInputNative,
-  TouchableOpacity,
+  View,
+  Text,
+  Dimensions,
+  TextInput,
   ActivityIndicator,
-  Alert,
-  Platform,
 } from 'react-native';
-import Constants from 'expo-constants';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Modalize } from 'react-native-modalize';
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Text, View } from '@app/screens/Themed';
 import { Button, Checkbox } from 'react-native-paper';
 
 //Redux
 import { useSelector, useDispatch } from 'react-redux';
 import { getDataSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector, getPendingSelector, getErrorSelector } from '@app/store/brands/addBrand/selector';
-import { fetchBrandCreateRequest } from '@app/store/brands/addBrand/actions';
+import {
+  getDataSelector as getBrandSelector,
+  getPendingSelector,
+  getErrorSelector,
+} from '@app/store/brands/addBrand/selector';
+import { fetchBrandCreateClear, fetchBrandCreateRequest } from '@app/store/brands/addBrand/actions';
+import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+
+interface Props {
+  ref: React.Ref<any>;
+  navigation?: any;
+  closeSheet?: any;
+}
 
 export interface AddBrand {
   brand_name: string;
@@ -26,110 +35,129 @@ export interface AddBrand {
   user_id: number | null;
 }
 
-export default function BrandScreen() {
-
+const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
   const dispatch = useDispatch();
-
   const brand = useSelector(getBrandSelector);
   const isPending = useSelector(getPendingSelector);
   const error = useSelector(getErrorSelector);
-
   const user = useSelector(getDataSelector);
-  
+
   const [form, setForm] = useState<AddBrand>(() => ({
     own_brand: false,
     brand_name: '',
     error: '',
-    user_id: -1
+    user_id: -1,
   }));
 
-  useEffect(()=>{
-    if(error && error.length > 0){
-      setForm(()=>({
+  useEffect(() => {
+    if (error && error.length > 0) {
+      setForm(() => ({
         ...form,
-        error
+        error,
       }));
-
     }
-  },[error])
+  }, [error]);
+
+  useEffect(() => {
+    if (brand && brand.brand_name) {
+      dispatch(fetchBrandListRequest({ user_id: user && user.id }));
+      setForm({
+        own_brand: false,
+        brand_name: '',
+        error: '',
+        user_id: -1,
+      });
+      _.closeSheet();
+      dispatch(fetchBrandCreateClear());
+    }
+  }, [brand]);
 
   const handleSubmit = () => {
     const data = form;
     data['user_id'] = user && user.id;
     delete data['error'];
     dispatch(fetchBrandCreateRequest(data));
-  }
-
-  console.log("brand", brand);
-  console.log("error", error);
+  };
 
   return (
-    <KeyboardAwareScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Brands</Text>
-        <Text style={styles.titleSignText}>Fill required information for add new brand.</Text>
-      </View>
-      <View style={styles.fieldsView}>
-        <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Brand Name</Text>
-          <View style={styles.inputFieldSubView}
-          >
-            {/* <FontAwesome
-              name="user"
-              size={24}
-              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
-            /> */}
-            <TextInputNative
-              placeholder="Enter Brand Name"
-              style={{ width: '85%', paddingLeft: '5%' }}
-              maxLength={15}
-              onChangeText={(text: string) => { setForm(() => ({ ...form, brand_name: text })) }}
-              value={form.brand_name}
-            />
+    <>
+      <Modalize ref={ref} modalHeight={Dimensions.get('screen').height / 1.2}>
+        <View style={styles.innerContainer}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleWelcomeText}>Add Brand</Text>
+            <Text style={styles.titleSignText}>
+              Fill required information for add new brand.
+            </Text>
+          </View>
+          <View style={styles.fieldsView}>
+            <View style={styles.inputFieldsMainView}>
+              <Text style={styles.labelText}>Brand Name</Text>
+              <View style={styles.inputFieldSubView}>
+                <TextInput
+                  placeholder="Enter Brand Name"
+                  style={{ width: '85%', paddingLeft: '5%' }}
+                  maxLength={40}
+                  onChangeText={(text: string) => {
+                    setForm(() => ({ ...form, brand_name: text }));
+                  }}
+                  value={form.brand_name}
+                />
+              </View>
+            </View>
+            <View style={styles.checkboxContainer}>
+              <Checkbox
+                status={form.own_brand ? 'checked' : 'unchecked'}
+                onPress={() => {
+                  setForm(() => ({ ...form, own_brand: !form.own_brand }));
+                }}
+              />
+              <Text style={styles.label}>Own Brand</Text>
+            </View>
+            <View style={styles.loginButtonView}>
+              {isPending ? (
+                <ActivityIndicator
+                  size="large"
+                  color="#5460E0"
+                  style={styles.activitIndicator}
+                />
+              ) : (
+                <Button
+                  style={styles.loginButton}
+                  icon={() => <Ionicons name="add" size={20} color="white" />}
+                  mode="contained"
+                  onPress={handleSubmit}
+                >
+                  <Text style={styles.loginButtonText}>Add Brand</Text>
+                </Button>
+              )}
+            </View>
+            <Text style={{ color: 'red', fontSize: 13 }}>{form.error}</Text>
           </View>
         </View>
-        <View style={styles.checkboxContainer}>
-          <Checkbox
-            status={form.own_brand ? 'checked' : 'unchecked'}
-            onPress={() => { setForm(() => ({ ...form, own_brand: true })) }}
-          />
-          <Text style={styles.label}>Own Brand</Text>
-        </View>
-        <View style={styles.loginButtonView}>
-          {isPending ? (
-            <ActivityIndicator
-              size="large"
-              color="#5460E0"
-              style={styles.activitIndicator}
-            />
-          ) : (
-            <Button
-              style={styles.loginButton}
-              icon={() => (
-                <Ionicons name="add" size={20} color="white" />
-              )}
-              mode="contained"
-              onPress={handleSubmit}
-            >
-              <Text style={styles.loginButtonText}>Add Brand</Text>
-            </Button>
-          )}
-        </View>
-        <Text style={{ color: 'red', fontSize: 13 }}>
-            {form.error}
-        </Text>
-      </View>
-    </KeyboardAwareScrollView>
+      </Modalize>
+    </>
   );
-}
+});
+
+export default AddBrandBottomSheet;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F0F0F8',
-    height: '100%',
-    marginTop: Constants.statusBarHeight,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 10,
+  },
+  textStyle: {
+    color: '#1D1D1F',
+    fontSize: 18,
+    lineHeight: 25,
+  },
+  innerContainer: {
+    backgroundColor: 'white',
+    height: Dimensions.get('screen').height / 1.2,
   },
   titleContainer: {
+    backgroundColor: '#F0F0F8',
     height: '20%',
     width: '99%',
     alignSelf: 'center',
@@ -155,7 +183,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   inputFieldsMainView: {
-    marginLeft: '5%',
     width: '100%',
     backgroundColor: 'transparent',
   },
@@ -261,11 +288,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 20,
   },
   checkbox: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   label: {
     margin: 8,
