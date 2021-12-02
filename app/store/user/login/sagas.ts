@@ -23,7 +23,6 @@ function* fetchUserLoginSaga(action: FetchUserLoginRequest): any {
       })
     );
   } catch (e: any) {
-    console.log('response', e.response);
     yield put(
       actions.fetchUserLoginFailure({
         response: e.response ? e.response.data : { error: e.message },

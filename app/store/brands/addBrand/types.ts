@@ -2,13 +2,13 @@ import * as actionTypes from './actionTypes';
 
 export interface IBrand {
   brand_name: string;
-  own_brand: boolean;
+  own_brand: string;
   user_id: number;
 }
 
 export interface requestBrand {
     brand_name: string;
-    own_brand: boolean;
+    own_brand: string;
     user_id: number | null;
 }
 

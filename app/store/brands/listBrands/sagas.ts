@@ -23,7 +23,6 @@ function* fetchBrandListSaga(action: FetchBrandRequest): any {
       })
     );
   } catch (e: any) {
-    console.log('response', e.response);
     yield put(
       actions.fetchBrandListFailure({
         response: e.response ? e.response.data : { error: e.message },

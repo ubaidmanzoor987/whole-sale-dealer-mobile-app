@@ -65,8 +65,6 @@ function ForgetScreen({
       setErrorMessage('Email is Required');
     } 
   };
-  console.log("data",userData, isPending, errorMessageServer, message );
-  
 
   const handleUsername = (text: string) => {
     if (text.length === 0) {

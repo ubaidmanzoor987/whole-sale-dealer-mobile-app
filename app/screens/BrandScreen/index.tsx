@@ -21,9 +21,10 @@ import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
-import AddBrandBottomSheet from './addBrandBottomSheet';
+import AddBrandBottomSheet from './addEditBrandBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
+import { deleteBrand } from '@app/utils/apis';
 
 interface Props {
   rows?: any;
@@ -43,12 +44,10 @@ function TableWidget(props: Props) {
   const navigation = useNavigation();
   const brands = useSelector(listBrandSelector);
   const isPending = useSelector(getPendingSelector);
-  const error = useSelector(getErrorSelector);
   const [selectedColumn, setSelectedColumn] = useState('');
-  const [openModel, setOpenModel] = useState<boolean>(false);
   const addBrandsBottomSheetRef = useRef() as any;
   const [row, setRow] = useState<any>({});
-  const addBrandSelector = useSelector(getBrandSelector);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const user = useSelector(getUserSelector);
   useEffect(() => {
@@ -112,6 +111,8 @@ function TableWidget(props: Props) {
   );
 
   const openAddBrandSheet = () => {
+    setRow({});
+    setIsEdit(false);
     addBrandsBottomSheetRef.current.open();
   };
 
@@ -119,15 +120,34 @@ function TableWidget(props: Props) {
     addBrandsBottomSheetRef.current.close();
   };
 
-  const handleDelete = () => {
+  const handleDelete = (itemData: renderProps) => {
     Alert.alert('Warning', 'Are you sure You want to delete!', [
       {
         text: 'Cancel',
         onPress: () => {},
         style: 'cancel',
       },
-      { text: 'Yes', onPress: () => console.log('OK Pressed') },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          const req = {
+            brand_id: itemData.item.id,
+            user_id: user?.id,
+          }
+          const res = await deleteBrand(req);
+          if (res.message) {
+            dispatch(fetchBrandListRequest({user_id: user && user.id}))
+          } else if (res.error) {
+          }
+        },
+      },
     ]);
+  };
+
+  const handleEditClick = (itemData: renderProps) => {
+    setRow(itemData.item);
+    setIsEdit(true);
+    addBrandsBottomSheetRef.current.open();
   };
 
   const RenderedItemsData = (itemData: renderProps) => {
@@ -141,7 +161,7 @@ function TableWidget(props: Props) {
         >
           <Text style={styles.columnRowTxt}>{itemData.item.brand_name}</Text>
           <Text style={styles.columnRowTxt}>
-            {itemData.item.own_brand === true ? 'Yes' : 'No'}
+            {itemData.item.own_brand === "true" ? 'Yes' : 'No'}
           </Text>
           <View
             style={{
@@ -152,14 +172,19 @@ function TableWidget(props: Props) {
               width: '30%',
             }}
           >
-            <TouchableOpacity style={{ marginRight: '3%' }}>
+            <TouchableOpacity
+              style={{ marginRight: '3%' }}
+              onPress={() => {
+                handleEditClick(itemData);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={20}
                 color={'#5460E0'}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleDelete}>
+            <TouchableOpacity onPress={()=>handleDelete(itemData)}>
               <MaterialCommunityIcons
                 name="delete"
                 size={20}
@@ -202,39 +227,27 @@ function TableWidget(props: Props) {
           Add Brands
         </Text>
       </TouchableOpacity>
-      <View
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: '5%',
-        }}
-      >
-        <FlatList
-          nestedScrollEnabled
-          data={brands}
-          style={{ width: '98%' }}
-          keyExtractor={(item, index) => index + ''}
-          ListHeaderComponent={tableHeader}
-          stickyHeaderIndices={[0]}
-          ListFooterComponent={
-            isPending ? (
-              <ActivityIndicator size="large" color="#27428B" />
-            ) : (
-              <></>
-            )
-          }
-          ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
-          renderItem={({ item, index }) => (
-            <RenderedItemsData item={item} index={index} />
-          )}
-        />
-      </View>
+      <FlatList
+        data={brands}
+        style={styles.flatListContainer}
+        keyExtractor={(item, index) => index + ''}
+        ListHeaderComponent={tableHeader}
+        stickyHeaderIndices={[0]}
+        ListFooterComponent={
+          isPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
+        }
+        ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
+        renderItem={({ item, index }) => (
+          <RenderedItemsData item={item} index={index} />
+        )}
+      />
 
       <AddBrandBottomSheet
         ref={addBrandsBottomSheetRef}
         navigation={navigation}
         closeSheet={handleClose}
+        row={row}
+        isEdit={isEdit}
       />
     </View>
   );
@@ -277,6 +290,12 @@ const styles = StyleSheet.create({
     borderTopStartRadius: 10,
     height: 50,
     display: 'flex',
+  },
+  flatListContainer: {
+    width: '98%',
+    display: 'flex',
+    alignSelf: 'center',
+    marginTop: '2%',
   },
   tableRow: {
     flexDirection: 'row',

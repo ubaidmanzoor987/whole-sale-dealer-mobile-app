@@ -59,10 +59,6 @@ export default function BrandScreen() {
     delete data['error'];
     dispatch(fetchBrandCreateRequest(data));
   }
-
-  console.log("brand", brand);
-  console.log("error", error);
-
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>

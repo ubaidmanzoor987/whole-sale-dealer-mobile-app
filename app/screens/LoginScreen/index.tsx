@@ -51,7 +51,6 @@ function LoginScreen({
       try {
         const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
         const result = JSON.parse(jsonValue);
-        console.log('mount login screen');
         // if (result.type === 'success') {
         //   const data = {
         //     email: result.user.email,

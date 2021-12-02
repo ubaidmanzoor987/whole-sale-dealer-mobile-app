@@ -6,6 +6,7 @@ import {
   Dimensions,
   TextInput,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import { Modalize } from 'react-native-modalize';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,20 +20,27 @@ import {
   getPendingSelector,
   getErrorSelector,
 } from '@app/store/brands/addBrand/selector';
-import { fetchBrandCreateClear, fetchBrandCreateRequest } from '@app/store/brands/addBrand/actions';
+import {
+  fetchBrandCreateClear,
+  fetchBrandCreateRequest,
+} from '@app/store/brands/addBrand/actions';
 import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+import { updateBrand } from '@app/utils/apis';
 
 interface Props {
   ref: React.Ref<any>;
   navigation?: any;
   closeSheet?: any;
+  row?: any;
+  isEdit?: boolean;
 }
 
 export interface AddBrand {
   brand_name: string;
-  own_brand: boolean;
+  own_brand: string;
   error?: string;
   user_id: number | null;
+  brand_id?: number;
 }
 
 const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
@@ -41,9 +49,10 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
   const isPending = useSelector(getPendingSelector);
   const error = useSelector(getErrorSelector);
   const user = useSelector(getDataSelector);
+  const [updatePending, setUpdatePending] = useState<boolean>(false);
 
   const [form, setForm] = useState<AddBrand>(() => ({
-    own_brand: false,
+    own_brand: "false",
     brand_name: '',
     error: '',
     user_id: -1,
@@ -59,10 +68,29 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
   }, [error]);
 
   useEffect(() => {
+    if (_.isEdit === true && _.row?.brand_name) {
+      setForm({
+        ...form,
+        brand_name: _.row.brand_name,
+        own_brand: _.row.own_brand,
+        brand_id: _.row.id,
+      });
+    } else {
+      setForm({
+        own_brand: "false",
+        brand_name: '',
+        error: '',
+        user_id: -1,
+        brand_id: undefined,
+      });
+    }
+  }, [_.isEdit, _.row]);
+
+  useEffect(() => {
     if (brand && brand.brand_name) {
       dispatch(fetchBrandListRequest({ user_id: user && user.id }));
       setForm({
-        own_brand: false,
+        own_brand: "false",
         brand_name: '',
         error: '',
         user_id: -1,
@@ -72,11 +100,30 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
     }
   }, [brand]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const data = form;
-    data['user_id'] = user && user.id;
-    delete data['error'];
-    dispatch(fetchBrandCreateRequest(data));
+    if (_.isEdit === false) {
+      data['user_id'] = user && user.id;
+      delete data['error'];
+      dispatch(fetchBrandCreateRequest(data));
+    } else {
+      data['user_id'] = user && user.id;
+      const res = await updateBrand(data);
+      setUpdatePending(true);
+      if (res.message) {
+        dispatch(fetchBrandListRequest({user_id: user && user.id}))
+        setUpdatePending(false);
+        setForm({
+          own_brand: "false",
+          brand_name: '',
+          error: '',
+          user_id: -1,
+        });
+        _.closeSheet();
+      } else if (res.error) {
+        setUpdatePending(false);
+      }
+    }
   };
 
   return (
@@ -84,7 +131,9 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
       <Modalize ref={ref} modalHeight={Dimensions.get('screen').height / 1.2}>
         <View style={styles.innerContainer}>
           <View style={styles.titleContainer}>
-            <Text style={styles.titleWelcomeText}>Add Brand</Text>
+            <Text style={styles.titleWelcomeText}>
+              {_.isEdit === false ? 'Add Brand' : 'Edit Brand'}
+            </Text>
             <Text style={styles.titleSignText}>
               Fill required information for add new brand.
             </Text>
@@ -106,15 +155,15 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
             </View>
             <View style={styles.checkboxContainer}>
               <Checkbox
-                status={form.own_brand ? 'checked' : 'unchecked'}
+                status={form.own_brand === "true" ? 'checked' : 'unchecked'}
                 onPress={() => {
-                  setForm(() => ({ ...form, own_brand: !form.own_brand }));
+                  setForm(() => ({ ...form, own_brand: form.own_brand === "true" ? "false" : "true" }));
                 }}
               />
               <Text style={styles.label}>Own Brand</Text>
             </View>
             <View style={styles.loginButtonView}>
-              {isPending ? (
+              {isPending || updatePending ? (
                 <ActivityIndicator
                   size="large"
                   color="#5460E0"
@@ -123,11 +172,12 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
               ) : (
                 <Button
                   style={styles.loginButton}
-                  icon={() => <Ionicons name="add" size={20} color="white" />}
                   mode="contained"
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.loginButtonText}>Add Brand</Text>
+                  <Text style={styles.loginButtonText}>
+                    {_.isEdit === false ? 'Add Brand' : 'Update Brand'}
+                  </Text>
                 </Button>
               )}
             </View>
