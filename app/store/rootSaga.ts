@@ -4,10 +4,12 @@ import registerSaga from "./user/register/sagas";
 import loginSaga from "./user/login/sagas";
 import forgotSaga from './user/forgotPassword/sagas';
 import addBrandSaga from './brands/addBrand/sagas';
+import listBrandSaga from './brands/listBrands/sagas';
 
 export function* rootSaga() {
   yield all([fork(registerSaga)]);
   yield all([fork(loginSaga)]);
   yield all([fork(forgotSaga)]);
   yield all([fork(addBrandSaga)]);
+  yield all([fork(listBrandSaga)]);
 }

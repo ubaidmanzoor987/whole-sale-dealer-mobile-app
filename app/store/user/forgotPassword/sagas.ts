@@ -24,7 +24,6 @@ function* fetchUserForgetSaga(action: FetchUserForgetRequest): any {
       })
     );
   } catch (e: any) {
-    console.log('response', e.response);
     yield put(
       actions.fetchUserForgetFailure({
         response: e.response ? e.response.data : { error: e.message },

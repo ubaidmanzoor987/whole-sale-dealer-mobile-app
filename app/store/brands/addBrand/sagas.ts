@@ -12,7 +12,7 @@ import {
 } from './types';
 
 const BrandCreate = (body: requestBrand) =>
-  axios.post<responseBrand>('brands/shopkeeper/insert_brands', body);
+  axios.post<responseBrand>('brands/shopkeeper/insert_brand', body);
 
 function* fetchBrandCreateSaga(action: FetchBrandRequest): any {
   try {
@@ -23,7 +23,6 @@ function* fetchBrandCreateSaga(action: FetchBrandRequest): any {
       })
     );
   } catch (e: any) {
-    console.log('response', e.response);
     yield put(
       actions.fetchBrandCreateFailure({
         response: e.response ? e.response.data : { error: e.message },

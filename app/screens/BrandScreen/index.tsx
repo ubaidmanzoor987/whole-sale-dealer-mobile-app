@@ -1,208 +1,259 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   ActivityIndicator,
-  TextInput as TextInputNative,
   Alert,
-  Button,
-  CheckBox
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import _ from 'lodash';
 import Constants from 'expo-constants';
-import { DataTable, Provider, Modal, Portal, Button as MaterialButton } from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { Text, View } from '@app/screens/Themed';
-import { getDataSelector } from '@app/store/user/login/selector'
+import {
+  getDataSelector as listBrandSelector,
+  getPendingSelector,
+  getErrorSelector,
+} from '@app/store/brands/listBrands/selector';
+import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+import { useDispatch, useSelector } from 'react-redux';
+import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
+import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
+import AddBrandBottomSheet from './addEditBrandBottomSheet';
+import { useNavigation } from '@react-navigation/native';
+import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
+import { deleteBrand } from '@app/utils/apis';
 
-export default function BrandScreen() {
-  const [brands, setBrands] = useState([]);
+interface Props {
+  rows?: any;
+  isPending?: boolean;
+  error?: any;
+}
 
-  const user = useSelector(getDataSelector);
-  const [form , setForm] = useState(()=>({
-    isShow: false,
-    brand_name: '',
-    own_brand: false,
-    user_id: '',
-    error:''
-  }));
-  const [isPending, setIsPending] = useState(false);
+interface renderProps {
+  item?: any;
+  index?: any;
+  type?: any;
+}
 
-  useEffect(()=>{
-    console.log(user, "user");
-    
-    // axios.post('/brands/shopkeeper/list_brands',{
-    //   user_id: user?.shopkeeper_id
-    // })
-    // .then(res=>{
-    //   console.log(res);
-    // })
-  },[])
+function TableWidget(props: Props) {
+  const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+  const brands = useSelector(listBrandSelector);
+  const isPending = useSelector(getPendingSelector);
+  const [selectedColumn, setSelectedColumn] = useState('');
+  const addBrandsBottomSheetRef = useRef() as any;
+  const [row, setRow] = useState<any>({});
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
-  const handleSubmit = () => {
+  const user = useSelector(getUserSelector);
+  useEffect(() => {
+    if (brands.length === 0)
+      dispatch(fetchBrandListRequest({ user_id: user && user.id }));
+  }, [user]);
 
-  }
-  const handleEdit = () => {
+  const cols = [
+    {
+      name: 'Brand Name',
+      col_name: 'brand_name',
+      type: 'string',
+    },
+    {
+      name: 'Own Brand',
+      col_name: 'own_brand',
+      type: 'boolean',
+    },
+    {
+      name: 'Action',
+      col_name: 'action',
+      type: 'boolean',
+    },
+  ];
 
-  }
-  const handleDelete = () => {
-    Alert.alert(
-      "Warning",
-      "Are you sure!",
-      [
+  const sortColumn = (col) => {
+    const newDirection = direction === 'desc' ? 'asc' : 'desc';
+    const sortedData = _.orderBy(brands, [col], [newDirection]);
+    setDirection(newDirection);
+    // setStocks(sortedData);
+    setSelectedColumn(col);
+  };
+
+  const tableHeader = () => (
+    <View style={styles.tableHeader}>
+      {cols.map((column, index) => {
         {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "Yes", onPress: () => console.log("OK Pressed") }
-      ]
-    );
+          return (
+            <TouchableOpacity
+              key={index}
+              style={styles.columnHeader}
+              onPress={() => sortColumn(column.col_name)}
+            >
+              <Text style={styles.columnHeaderTxt}>
+                {column.name + ' '}
+                {selectedColumn === column.col_name && (
+                  <MaterialCommunityIcons
+                    name={
+                      direction === 'desc'
+                        ? 'arrow-down-drop-circle'
+                        : 'arrow-up-drop-circle'
+                    }
+                  />
+                )}
+              </Text>
+            </TouchableOpacity>
+          );
+        }
+      })}
+    </View>
+  );
 
-  }
+  const openAddBrandSheet = () => {
+    setRow({});
+    setIsEdit(false);
+    addBrandsBottomSheetRef.current.open();
+  };
+
+  const handleClose = (row: any) => {
+    addBrandsBottomSheetRef.current.close();
+  };
+
+  const handleDelete = (itemData: renderProps) => {
+    Alert.alert('Warning', 'Are you sure You want to delete!', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          const req = {
+            brand_id: itemData.item.id,
+            user_id: user?.id,
+          }
+          const res = await deleteBrand(req);
+          if (res.message) {
+            dispatch(fetchBrandListRequest({user_id: user && user.id}))
+          } else if (res.error) {
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleEditClick = (itemData: renderProps) => {
+    setRow(itemData.item);
+    setIsEdit(true);
+    addBrandsBottomSheetRef.current.open();
+  };
+
+  const RenderedItemsData = (itemData: renderProps) => {
+    return (
+      <TouchableWithoutFeedback>
+        <View
+          style={{
+            ...styles.tableRow,
+            backgroundColor: itemData.index % 2 == 1 ? '#CFD5E5' : 'white',
+          }}
+        >
+          <Text style={styles.columnRowTxt}>{itemData.item.brand_name}</Text>
+          <Text style={styles.columnRowTxt}>
+            {itemData.item.own_brand === "true" ? 'Yes' : 'No'}
+          </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '30%',
+            }}
+          >
+            <TouchableOpacity
+              style={{ marginRight: '3%' }}
+              onPress={() => {
+                handleEditClick(itemData);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="pencil"
+                size={20}
+                color={'#5460E0'}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>handleDelete(itemData)}>
+              <MaterialCommunityIcons
+                name="delete"
+                size={20}
+                color={'red'}
+                style={{ opacity: 0.8 }}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  };
+
   return (
-    <KeyboardAwareScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      {/* <FilterWidget
+        columns={props.use_dashboard_cols ? columns : cols}
+        stocks={stocksData}
+        setStocks={setStocksProps}
+      /> */}
       <View style={styles.titleContainer}>
         <Text style={styles.titleWelcomeText}>Brands</Text>
         <Text style={styles.titleSignText}>List of all brands</Text>
       </View>
-      <View style={styles.fieldsView}>
-        <View style={styles.inputFieldsMainView}>
-          {/* <Text style={styles.labelText}>Search</Text> */}
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-            }}
-          >
-            <FontAwesome
-              name="search"
-              size={24}
-              style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
-            />
-            <TextInputNative
-              onChangeText={(e)=>console.log(e)}
-              placeholder="Search by brand name"
-              style={{ width: '85%' }}
-              keyboardType="email-address"
-              // maxLength={15}
-            />
-          </View>
-        </View>
-        <View style={{ width: '100%', height: 'auto', backgroundColor: '#fff', marginHorizontal: 'auto' }}>
-        <DataTable>
-          <DataTable.Header>
-            <DataTable.Title><Text style={{ fontWeight: 'bold', fontSize: 15 }}>Brand Name</Text></DataTable.Title>
-            <DataTable.Title><Text style={{ fontWeight: 'bold', fontSize: 15 }}>Own Brand</Text></DataTable.Title>
-            <DataTable.Title><Text style={{ fontWeight: 'bold', fontSize: 15 }}>Action</Text></DataTable.Title>
-          </DataTable.Header>
+      <TouchableOpacity
+        style={styles.addBrandTouchable}
+        onPress={openAddBrandSheet}
+      >
+        <MaterialCommunityIcons
+          name="plus-box"
+          color="black"
+          size={20}
+          style={{ marginRight: '2%' }}
+        />
+        <Text
+          style={{
+            color: 'black',
+          }}
+        >
+          Add Brands
+        </Text>
+      </TouchableOpacity>
+      <FlatList
+        data={brands}
+        style={styles.flatListContainer}
+        keyExtractor={(item, index) => index + ''}
+        ListHeaderComponent={tableHeader}
+        stickyHeaderIndices={[0]}
+        ListFooterComponent={
+          isPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
+        }
+        ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
+        renderItem={({ item, index }) => (
+          <RenderedItemsData item={item} index={index} />
+        )}
+      />
 
-          <DataTable.Row>
-            <DataTable.Cell><Text style={{ fontSize: 14 }}>Frozen yogurt</Text></DataTable.Cell>
-            <DataTable.Cell><Text style={{ fontSize: 14 }}>Yes</Text></DataTable.Cell>
-            <DataTable.Cell>
-              <Button
-                title="EDIT"
-                onPress={()=>{setForm(()=>({...form, isShow: true}))}}
-              />
-              <Button
-                title="DELETE"
-                color="#dc3545"
-                onPress={handleDelete}
-              />
-              {/* <Button mode="contained" onPress={()=>{Alert.alert('called')}} >
-                EDIT
-              </Button>
-              <Button mode="contained" compact={true} onPress={()=>{Alert.alert('called')}}>
-                DELETE
-              </Button> */}
-            </DataTable.Cell>
-          </DataTable.Row>
-
-        </DataTable>
-        </View>
-        {/* {errorMessage ? (
-          <Text style={styles.errorMessage}>{errorMessage}</Text>
-        ) : (
-          <></>
-        )} */}
-        {/* <View style={styles.loginButtonView}>
-          {isPending ? (
-            <ActivityIndicator
-              size="large"
-              color="#5460E0"
-              style={styles.activitIndicator}
-            />
-          ) : (
-            <Button
-              style={styles.loginButton}
-              mode="contained"
-              onPress={handleLogin}
-            >
-              <Text style={styles.loginButtonText}>Submit</Text>
-            </Button>
-          )}
-        </View> */}
-      </View>
-      <Provider>
-          <Portal>
-            <Modal visible={form.isShow} onDismiss={()=>{setForm(()=>({...form, isShow: false}))}} style={{ width: '80%', backgroundColor: 'white', padding: 20, height: '50%' }}>
-              <View style={styles.fieldsView}>
-                <View style={styles.inputFieldsMainView}>
-                  <Text style={styles.labelText}>Brand Name</Text>
-                  <View style={styles.inputFieldSubView}
-                  >
-                    {/* <FontAwesome
-                      name="user"
-                      size={24}
-                      style={{ paddingTop: '3%', paddingHorizontal: '3%' }}
-                    /> */}
-                    <TextInputNative
-                      placeholder="Enter Brand Name"
-                      style={{ width: '85%', paddingLeft: '5%' }}
-                      maxLength={15}
-                      onChangeText={(text: string) => { setForm(() => ({ ...form, brand_name: text })) }}
-                      value={form.brand_name}
-                    />
-                  </View>
-                </View>
-                <View style={styles.checkboxContainer}>
-                  <CheckBox
-                    value={form.own_brand}
-                    onValueChange={(value: boolean) => { setForm(() => ({ ...form, own_brand: value })) }}
-                    style={styles.checkbox}
-                  />
-                  <Text style={styles.label}>Own Brand</Text>
-                </View>
-                <View style={styles.loginButtonView}>
-                  {isPending ? (
-                    <ActivityIndicator
-                      size="large"
-                      color="#5460E0"
-                      style={styles.activitIndicator}
-                    />
-                  ) : (
-                    <MaterialButton
-                      style={styles.loginButton}
-                      icon={() => (
-                        <Ionicons name="add" size={20} color="white" />
-                      )}
-                      mode="contained"
-                      onPress={handleSubmit}
-                    >
-                      <Text style={styles.loginButtonText}>Update Brand</Text>
-                    </MaterialButton>
-                  )}
-                </View>
-                <Text style={{ color: 'red', fontSize: 13 }}>
-                    {form.error}
-                </Text>
-              </View>
-            </Modal>
-          </Portal>
-        </Provider>
-    </KeyboardAwareScrollView>
+      <AddBrandBottomSheet
+        ref={addBrandsBottomSheetRef}
+        navigation={navigation}
+        closeSheet={handleClose}
+        row={row}
+        isEdit={isEdit}
+      />
+    </View>
   );
 }
+
+export default React.memo(TableWidget);
 
 const styles = StyleSheet.create({
   container: {
@@ -211,6 +262,7 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   titleContainer: {
+    backgroundColor: 'white',
     height: '20%',
     width: '99%',
     alignSelf: 'center',
@@ -229,126 +281,57 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 14,
   },
-  fieldsView: {
-    width: '96%',
-    alignItems: 'center',
-    marginTop: '5%',
-    backgroundColor: 'transparent',
-  },
-  inputFieldsMainView: {
-    marginLeft: '5%',
-    width: '100%',
-    backgroundColor: 'transparent',
-  },
-  labelText: {
-    alignSelf: 'flex-start',
-    paddingLeft: '5%',
-    color: 'grey',
-  },
-  inputFieldSubView: {
-    display: 'flex',
+  tableHeader: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    marginLeft: '5%',
-    borderRadius: 30,
-    width: '88%',
-    marginVertical: '4%',
-    borderWidth: 1,
-    height: 50,
-  },
-  icons: {
-    paddingTop: '3.8%',
-    width: '15%',
-    paddingRight: '5%',
-  },
-  errorMessage: {
-    color: 'red',
-    fontSize: 12,
-    textAlign: 'left',
-    alignSelf: 'flex-start',
-    paddingLeft: '8%',
-  },
-  inputField: {
-    width: '93%',
-    marginLeft: '5%',
-  },
-  clientView: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '85%',
-    backgroundColor: 'transparent',
-    marginTop: '2.5%',
-  },
-  clientViewText: {
-    flex: 1,
-    paddingTop: '1%',
-    color: 'grey',
-    fontSize: 15,
-  },
-  loginButtonView: {
-    backgroundColor: 'transparent',
-    width: '100%',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingTop: '10%',
-  },
-  loginButton: {
-    width: '85%',
-    padding: '1.8%',
-    borderRadius: 20,
     backgroundColor: '#5460E0',
+    borderTopEndRadius: 10,
+    borderTopStartRadius: 10,
+    height: 50,
+    display: 'flex',
   },
-  loginButtonText: {
-    fontSize: 13,
-    color: 'white',
+  flatListContainer: {
+    width: '98%',
+    display: 'flex',
+    alignSelf: 'center',
+    marginTop: '2%',
   },
-  signupButton: {
-    width: '85%',
-    borderRadius: 20,
-    backgroundColor: 'white',
-    marginTop: '10%',
-    borderColor: 'grey',
-    padding: '1.8%',
-  },
-  signUpButtonText: {
-    fontSize: 13,
-    color: '#5460E0',
-  },
-  activitIndicator: {
-    width: '60%',
-    padding: '2%',
-  },
-  forgotView: {
-    backgroundColor: 'transparent',
-    width: '95%',
+  tableRow: {
+    flexDirection: 'row',
+    height: 45,
     alignItems: 'center',
-    paddingTop: '7%',
+    justifyContent: 'center',
+    display: 'flex',
   },
-  socialView: {
+  columnHeader: {
+    width: '33%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  columnHeaderTxt: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  columnRowTxt: {
+    width: '33%',
+    textAlign: 'center',
+    fontSize: 13,
+    color: 'black',
+  },
+  activityIndator: {
+    marginTop: '-100%',
+  },
+  addBrandTouchable: {
+    marginTop: '5%',
+    marginLeft: '1%',
+    width: '40%',
+    height: '5%',
+    borderRadius: 10,
+    borderWidth: 1,
     display: 'flex',
     flexDirection: 'row',
-    width: '100%',
-    backgroundColor: 'transparent',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: '5%',
-  },
-  socialTouchable: {
-    paddingTop: '1%',
-    paddingHorizontal: '5%',
-  },
-  imageStyle: {
-    width: 50,
-    height: 50,
-    backgroundColor: 'transparent',
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  checkbox: {
-    alignSelf: "flex-start",
-  },
-  label: {
-    margin: 8,
   },
 });

@@ -24,7 +24,6 @@ function* fetchUserCreateSaga(action: FetchUserRequest): any {
       })
     );
   } catch (e: any) {
-    console.log('response', e.response);
     yield put(
       actions.fetchUserCreateFailure({
         response: e.response ? e.response.data : { error: e.message },

@@ -4,7 +4,6 @@ import {
   TextInput as TextInputNative,
   TouchableOpacity,
   ActivityIndicator,
-  CheckBox,
   Alert,
   Platform,
 } from 'react-native';
@@ -12,16 +11,13 @@ import Constants from 'expo-constants';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { Image, Text, View } from '@app/screens/Themed';
-import { Button } from 'react-native-paper';
-// import CheckBox from '@react-native-community/checkbox';
+import { Button, Checkbox } from 'react-native-paper';
 
 //Redux
 import { useSelector, useDispatch } from 'react-redux';
 import { getDataSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector, getPendingSelector, getErrorSelector } from '@app/store/brands/addBrand/selector';
 import { fetchBrandCreateRequest } from '@app/store/brands/addBrand/actions';
-
-
 
 export interface AddBrand {
   brand_name: string;
@@ -49,7 +45,6 @@ export default function BrandScreen() {
 
   useEffect(()=>{
     if(error && error.length > 0){
-
       setForm(()=>({
         ...form,
         error
@@ -64,10 +59,6 @@ export default function BrandScreen() {
     delete data['error'];
     dispatch(fetchBrandCreateRequest(data));
   }
-
-  console.log("brand", brand);
-  console.log("error", error);
-
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
@@ -94,10 +85,9 @@ export default function BrandScreen() {
           </View>
         </View>
         <View style={styles.checkboxContainer}>
-          <CheckBox
-            value={form.own_brand}
-            onValueChange={(value: boolean) => { setForm(() => ({ ...form, own_brand: value })) }}
-            style={styles.checkbox}
+          <Checkbox
+            status={form.own_brand ? 'checked' : 'unchecked'}
+            onPress={() => { setForm(() => ({ ...form, own_brand: true })) }}
           />
           <Text style={styles.label}>Own Brand</Text>
         </View>

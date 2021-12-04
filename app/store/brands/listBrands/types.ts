@@ -2,26 +2,24 @@ import * as actionTypes from './actionTypes';
 
 export interface IBrand {
   brand_name: string;
-  own_brand: string;
+  own_brand: boolean;
   user_id: number;
 }
 
 export interface requestBrand {
-    brand_name: string;
-    own_brand: string;
-    user_id: number | null;
+  user_id: number | null;
 }
 
 export interface responseBrand {
   success: boolean;
   message: string;
-  data: IBrand | null;
+  data: IBrand[] | [];
   error: string | null | any;
 }
 
 export interface BrandState {
   pending: boolean;
-  data: IBrand | null;
+  data: IBrand[] | [];
   error: string | null;
   success: boolean;
   message: string;
@@ -32,22 +30,22 @@ export interface FetchBrandResponsePayload {
 }
 
 export interface FetchBrandRequest {
-  type: typeof actionTypes.Fetch_Brand_Create_Request;
+  type: typeof actionTypes.Fetch_Brand_List_Request;
   payload: requestBrand;
 }
 
 export type FetchBrandSuccess = {
-  type: typeof actionTypes.Fetch_Brand_Create_Success;
+  type: typeof actionTypes.Fetch_Brand_List_Success;
   payload: FetchBrandResponsePayload;
 };
 
 export type FetchBrandFailure = {
-  type: typeof actionTypes.Fetch_Brand_Create_Failure;
+  type: typeof actionTypes.Fetch_Brand_List_Failure;
   payload: FetchBrandResponsePayload;
 };
 
 export type FetchBrandClear = {
-  type: typeof actionTypes.Fetch_Brand_Create_Clear;
+  type: typeof actionTypes.Fetch_Brand_List_Clear;
 };
 
 export type BrandActions =

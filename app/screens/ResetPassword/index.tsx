@@ -60,7 +60,6 @@ function ResetScreen({
       try {
         const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
         const result = JSON.parse(jsonValue);
-        console.log('mount login screen');
       } catch (e) {
         // error reading value
       }
