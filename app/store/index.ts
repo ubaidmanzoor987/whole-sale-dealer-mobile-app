@@ -12,6 +12,10 @@ const sagaMiddleware = createSagaMiddleware();
 // const store = createStore(rootReducer, applyMiddleware(sagaMiddleware, logger));
 const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
 
+// store.subscribe(()=>{
+//     console.log(store.getState(), 'current state');
+// });
+
 // Run the saga
 sagaMiddleware.run(rootSaga);
 

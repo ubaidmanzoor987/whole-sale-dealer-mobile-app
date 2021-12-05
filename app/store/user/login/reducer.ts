@@ -34,6 +34,12 @@ export default (state = initialState, action: UserActions): userLoginState => {
         data: action.payload.response.data || {} as any,
         error: action.payload.response.error,
       };
+    case actions.User_Auto_Login:
+      // console.log("res reducer", action);
+      return {
+        ...state,
+        data: action.payload as any,
+      };
     case actions.Fetch_User_Login_Clear:
       return {
         pending: false,

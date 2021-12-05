@@ -26,3 +26,10 @@ export const fetchUserLoginClear = (
 ): types.FetchUserLoginClear => ({
   type: actions.Fetch_User_Login_Clear,
 });
+
+export const userAutoLogin = (
+  data: types.IUser
+  ): types.FetchUserAutoLoginRequest => ({
+    type: actions.User_Auto_Login,
+    payload: data,
+});

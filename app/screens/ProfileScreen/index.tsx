@@ -191,9 +191,9 @@ export default function ProfileScreen() {
             </MaterialButton>
             )}
         </View>
-        <Text style={{ color: 'red', fontSize: 13 }}>
+        {/* <Text style={{ color: 'red', fontSize: 13 }}>
             {form.error}
-        </Text>
+        </Text> */}
         </View>
         {/* {errorMessage ? (
           <Text style={styles.errorMessage}>{errorMessage}</Text>

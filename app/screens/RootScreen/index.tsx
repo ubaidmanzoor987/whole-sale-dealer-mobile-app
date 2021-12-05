@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AsyncStorgage from '@react-native-async-storage/async-storage'
 import {
   StyleSheet,
   ActivityIndicator,
@@ -12,10 +13,30 @@ import { StackScreenProps } from '@react-navigation/stack';
 
 import { Text, View, Image } from '@app/screens/Themed';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
+import { useDispatch, useSelector } from 'react-redux'
+import { userAutoLogin } from '@app/store/user/login/actions'
 
 function RootScreen({
   navigation,
 }: StackScreenProps<RootStackParamList, 'NotFound'>) {
+
+  const dispatch = useDispatch();
+
+  useEffect(()=>{
+    const autoLogin = async ()=>{
+      let user = await AsyncStorgage.getItem('user') || '' as any;
+      if(user !== ''){
+        user = JSON.parse(user);
+        dispatch(userAutoLogin(user))
+        navigation.navigate('Home');
+      }
+    }
+
+    autoLogin();
+
+  },[]);
+
+  
   const navigateToLogin = () => {
     navigation.navigate('LogIn');
   };

@@ -1,5 +1,6 @@
 import axios from '@app/hooks/useAxios';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import * as actions from './actions';
 import {
@@ -17,6 +18,9 @@ const userLogin = (body: requestUserLogin) =>
 function* fetchUserLoginSaga(action: FetchUserLoginRequest): any {
   try {
     const response = yield call(userLogin, action.payload);
+
+    AsyncStorage.setItem('user', JSON.stringify(response.data.data));
+
     yield put(
       actions.fetchUserLoginSuccess({
         response: response.data

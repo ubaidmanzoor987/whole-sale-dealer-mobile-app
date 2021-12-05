@@ -46,6 +46,11 @@ export interface FetchUserLoginRequest {
   payload: requestUserLogin;
 }
 
+export interface FetchUserAutoLoginRequest {
+  type: typeof actionTypes.User_Auto_Login;
+  payload: IUser;
+}
+
 export type FetchUserLoginSuccess = {
   type: typeof actionTypes.Fetch_User_Login_Success;
   payload: FetchUserResponsePayload;
@@ -60,8 +65,14 @@ export type FetchUserLoginClear = {
   type: typeof actionTypes.Fetch_User_Login_Clear;
 };
 
+export type AutoUserLogin = {
+  type: typeof actionTypes.User_Auto_Login;
+  payload: FetchUserAutoLoginRequest;
+};
+
 export type UserActions =
   | FetchUserLoginRequest
   | FetchUserLoginSuccess
   | FetchUserLoginFailure
-  | FetchUserLoginClear;
+  | FetchUserLoginClear
+  | AutoUserLogin;
