@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from '@app/hooks/useAxios';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -7,7 +8,8 @@ import {
   Alert,
   Button,
   CheckBox,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView
 } from 'react-native';
 import Constants from 'expo-constants';
 import { DataTable, Provider, Modal, Portal, Button as MaterialButton, Avatar } from 'react-native-paper';
@@ -16,30 +18,48 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icon
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector } from '@app/store/user/login/selector'
 import { IUser } from '@app/store/user/login/types';
+import ImagePicker  from 'react-native-image-picker';
+
+export interface option{
+  title: string;
+    customButtons: {
+        name: string;
+        title: string;
+    }[];
+    storageOptions: {
+        skipBackup: boolean;
+        path: string;
+    };
+    mediaType: string
+}
 
 export default function ProfileScreen() {
   const [brands, setBrands] = useState([]);
 
   const user = useSelector(getDataSelector);
   const [form , setForm] = useState<IUser>(()=>({
-    user_name: user ? user.user_name: '',
-    shop_name: user ? user.shop_name: '',
-    owner_name: user ? user.owner_name: '',
-    owner_phone_no: user ? user.owner_phone_no: '',
-    shop_phone_no1: user ? user.shop_phone_no1: '',
-    shop_phone_no2: user ? user.shop_phone_no2: '',
-    loc_long: user ? user.loc_long: '',
-    loc_lat: user ? user.loc_lat: '',
-    address: user ? user.address: '',
-    image: user ? user.image: '',
-    email: user ? user.email: '',
-    id: user ? user.id: 0,
-    token: user ? user.token: '',
+    user_name: '',
+    shop_name: '',
+    owner_name: '',
+    owner_phone_no: '',
+    shop_phone_no1: '',
+    shop_phone_no2: '',
+    loc_long: '',
+    loc_lat: '',
+    address: '',
+    image: '',
+    email: '',
+    id: 0,
+    token: '',
   }));
   const [isPending, setIsPending] = useState(false);
 
   useEffect(()=>{
-    console.log(user, "user");
+    setForm(()=>({
+      ...form,
+      ...user
+    }))
+    console.log(form, "user");
     
     // axios.post('/brands/shopkeeper/list_brands',{
     //   user_id: user?.shopkeeper_id
@@ -49,27 +69,39 @@ export default function ProfileScreen() {
     // })
   },[])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    let res = await axios.post('/api/user/update_user',form);
 
   }
-  const handleEdit = () => {
+
+  const handleImagePicker = () => {
+    
+    // let options: option = {
+    //   title: 'Select Image',
+    //   customButtons: [
+    //     { name: 'customOptionKey', title: 'Choose Photo from Custom Option' },
+    //   ],
+    //   storageOptions: {
+    //     skipBackup: true,
+    //     path: 'images',
+    //   },
+    //   mediaType: 'photo'
+    // };
+
+    // ImagePicker.launchImageLibrary({
+    //   title: 'Select Image',
+    //   customButtons: [
+    //     { name: 'customOptionKey', title: 'Choose Photo from Custom Option' },
+    //   ],
+    //   storageOptions: {
+    //     skipBackup: true,
+    //     path: 'images',
+    //   },
+    //   mediaType: 'photo'
+    // }, )
 
   }
-  const handleDelete = () => {
-    Alert.alert(
-      "Warning",
-      "Are you sure!",
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "Yes", onPress: () => console.log("OK Pressed") }
-      ]
-    );
 
-  }
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
@@ -99,125 +131,216 @@ export default function ProfileScreen() {
             <Avatar.Image size={150} source={require('@app/assets/images/main.jpeg')} />
         </TouchableOpacity>
       </View>
-      <View style={styles.fieldsView}>
-      <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Email*</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView
-            }}
-          >
-            <TextInputNative
-              onChangeText={()=>console.log('pressed')}
-              value={form.email}
-              defaultValue={form.email}
-              placeholder="Enter Email"
-              style={styles.inputField}
-            />
-          </View>
-        </View>
-        <View style={styles.inputFieldsMainView1}>
-          <View style={styles.userNameView}>
-            <Text style={styles.labelText}>User Name*</Text>
+      <ScrollView>
+        <View style={styles.fieldsView}>
+        <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Email*</Text>
             <View
               style={{
-                ...styles.inputFieldSubView1,
+                ...styles.inputFieldSubView
               }}
             >
               <TextInputNative
-                onChangeText={()=>{console.log()}}
-                placeholder="Enter User name"
-                value={form.user_name}
-                defaultValue={form.user_name}
-                style={{ marginLeft: '11%' }}
+                onChangeText={(e)=>setForm(()=>({...form, email: e}))}
+                value={form.email}
+                defaultValue={form.email}
+                placeholder="Enter Email"
+                style={styles.inputField}
+              />
+            </View>
+          </View>
+          <View style={styles.inputFieldsMainView1}>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>User Name*</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                }}
+              >
+                <TextInputNative
+                  onChangeText={()=>{console.log()}}
+                  placeholder="Enter User name"
+                  value={form.user_name}
+                  defaultValue={form.user_name}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={15}
+                />
+              </View>
+            </View>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>Shop Name*</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                }}
+              >
+                <TextInputNative
+                  onChangeText={()=>console.log()}
+                  placeholder="Enter Shop Name"
+                  value={form.shop_name}
+                  defaultValue={form.shop_name}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={30}
+                />
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Owner Name</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e)=>setForm(()=>({...form, owner_name: e}))}
+                placeholder="Owner Name"
+                keyboardType = "email-address"
+                style={{ width: '80%', marginLeft: '5%' }}
                 maxLength={15}
               />
             </View>
           </View>
-          <View style={styles.userNameView}>
-            <Text style={styles.labelText}>Shop Name*</Text>
+
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Owner Phone No</Text>
             <View
               style={{
-                ...styles.inputFieldSubView1,
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e)=>setForm(()=>({...form, owner_phone_no: e}))}
+                placeholder="Owner Phone No"
+                keyboardType = "numeric"
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={15}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputFieldsMainView1}>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>Shop Phone No</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                }}
+              >
+                <TextInputNative
+                  onChangeText={(e)=>{setForm(()=>({...form, shop_phone_no1: e}))}}
+                  placeholder="Enter Shop Phone No"
+                  value={form.shop_phone_no1}
+                  defaultValue={form.shop_phone_no1}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={15}
+                />
+              </View>
+            </View>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>Shop Other Phone No</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                }}
+              >
+                <TextInputNative
+                  onChangeText={(e)=>setForm(()=>({...form, shop_phone_no2: e}))}
+                  placeholder="Enter Shop Other Phone No"
+                  value={form.shop_phone_no2}
+                  defaultValue={form.shop_phone_no2}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={30}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Address</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e)=>setForm(()=>({...form, address:e}))}
+                placeholder="Enter Address"
+                multiline
+                numberOfLines={5}
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={15}
+              />
+            </View>
+          </View>
+
+          {/* <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Password*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
               }}
             >
               <TextInputNative
                 onChangeText={()=>console.log()}
-                placeholder="Enter Shop Name"
-                value={form.shop_name}
-                defaultValue={form.shop_name}
-                style={{ marginLeft: '11%' }}
-                maxLength={30}
+                placeholder="Enter Your Passwod"
+                secureTextEntry={true}
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={15}
               />
             </View>
+          </View> */}
+          <View style={styles.inputFieldsMainView}>
+            {/* <Text style={styles.labelText}>Search</Text> */}
+            <View style={styles.UpdateProfileButtonView}>
+              {isPending ? (
+              <ActivityIndicator
+                  size="large"
+                  color="#5460E0"
+                  style={styles.activitIndicator}
+              />
+              ) : (
+              <MaterialButton
+                  style={styles.UpdateProfileButton}
+                  // icon={() => (
+                  // <Ionicons name="add" size={20} color="white" />
+                  // )}
+                  mode="contained"
+                  onPress={handleSubmit}
+              >
+                  <Text style={styles.UpdateProfileButtonText}>Update Profile</Text>
+              </MaterialButton>
+              )}
           </View>
-        </View>
-
-        <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Password*</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-            }}
-          >
-            <TextInputNative
-              onChangeText={()=>console.log()}
-              placeholder="Enter Your Passwod"
-              secureTextEntry={true}
-              style={{ width: '80%', marginLeft: '5%' }}
-              maxLength={15}
-            />
+          {/* <Text style={{ color: 'red', fontSize: 13 }}>
+              {form.error}
+          </Text> */}
           </View>
-        </View>
-        <View style={styles.inputFieldsMainView}>
-          {/* <Text style={styles.labelText}>Search</Text> */}
-          <View style={styles.UpdateProfileButtonView}>
+          {/* {errorMessage ? (
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+          ) : (
+            <></>
+          )} */}
+          {/* <View style={styles.UpdateProfileButtonView}>
             {isPending ? (
-            <ActivityIndicator
+              <ActivityIndicator
                 size="large"
                 color="#5460E0"
                 style={styles.activitIndicator}
-            />
+              />
             ) : (
-            <MaterialButton
+              <Button
                 style={styles.UpdateProfileButton}
-                // icon={() => (
-                // <Ionicons name="add" size={20} color="white" />
-                // )}
                 mode="contained"
-                onPress={handleSubmit}
-            >
-                <Text style={styles.UpdateProfileButtonText}>Update Profile</Text>
-            </MaterialButton>
+                onPress={handleLogin}
+              >
+                <Text style={styles.UpdateProfileButtonText}>Submit</Text>
+              </Button>
             )}
+          </View> */}
         </View>
-        {/* <Text style={{ color: 'red', fontSize: 13 }}>
-            {form.error}
-        </Text> */}
-        </View>
-        {/* {errorMessage ? (
-          <Text style={styles.errorMessage}>{errorMessage}</Text>
-        ) : (
-          <></>
-        )} */}
-        {/* <View style={styles.UpdateProfileButtonView}>
-          {isPending ? (
-            <ActivityIndicator
-              size="large"
-              color="#5460E0"
-              style={styles.activitIndicator}
-            />
-          ) : (
-            <Button
-              style={styles.UpdateProfileButton}
-              mode="contained"
-              onPress={handleLogin}
-            >
-              <Text style={styles.UpdateProfileButtonText}>Submit</Text>
-            </Button>
-          )}
-        </View> */}
-      </View>
+      </ScrollView>
     </KeyboardAwareScrollView>
   );
 }
