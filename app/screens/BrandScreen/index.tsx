@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Snackbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
@@ -48,8 +49,12 @@ function TableWidget(props: Props) {
   const addBrandsBottomSheetRef = useRef() as any;
   const [row, setRow] = useState<any>({});
   const [isEdit, setIsEdit] = useState<boolean>(false);
-
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
   const user = useSelector(getUserSelector);
+  const onDismissSnackBar = () => setVisible(false);
+
   useEffect(() => {
     if (brands.length === 0)
       dispatch(fetchBrandListRequest({ user_id: user && user.id }));
@@ -133,11 +138,16 @@ function TableWidget(props: Props) {
           const req = {
             brand_id: itemData.item.id,
             user_id: user?.id,
-          }
+          };
           const res = await deleteBrand(req);
           if (res.message) {
-            dispatch(fetchBrandListRequest({user_id: user && user.id}))
+            dispatch(fetchBrandListRequest({ user_id: user && user.id }));
+            setVisible(true);
+            setMessage(res.message);
           } else if (res.error) {
+            setVisible(true);
+            setMessage(res.message);
+            setIsError(true);
           }
         },
       },
@@ -161,7 +171,7 @@ function TableWidget(props: Props) {
         >
           <Text style={styles.columnRowTxt}>{itemData.item.brand_name}</Text>
           <Text style={styles.columnRowTxt}>
-            {itemData.item.own_brand === "true" ? 'Yes' : 'No'}
+            {itemData.item.own_brand === 'true' ? 'Yes' : 'No'}
           </Text>
           <View
             style={{
@@ -184,7 +194,7 @@ function TableWidget(props: Props) {
                 color={'#5460E0'}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=>handleDelete(itemData)}>
+            <TouchableOpacity onPress={() => handleDelete(itemData)}>
               <MaterialCommunityIcons
                 name="delete"
                 size={20}
@@ -249,6 +259,16 @@ function TableWidget(props: Props) {
         row={row}
         isEdit={isEdit}
       />
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        style={{
+          backgroundColor: isError ? 'red' : '#5460E0',
+          marginBottom: '6%',
+        }}
+      >
+        <Text style={{ color: 'white' }}>{message}</Text>
+      </Snackbar>
     </View>
   );
 }
@@ -263,7 +283,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     backgroundColor: 'white',
-    height: '20%',
+    height: '15%',
     width: '99%',
     alignSelf: 'center',
     borderBottomRightRadius: 80,

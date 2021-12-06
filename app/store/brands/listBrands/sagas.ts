@@ -12,7 +12,7 @@ import {
 } from './types';
 
 const BrandList = (body: requestBrand) =>
-  axios.post<responseBrand>('brands/shopkeeper/list_brands', body);
+  axios.post<responseBrand>('brands/list_brands', body);
 
 function* fetchBrandListSaga(action: FetchBrandRequest): any {
   try {

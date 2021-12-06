@@ -9,35 +9,50 @@ import {
   Button,
   CheckBox,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { DataTable, Provider, Modal, Portal, Button as MaterialButton, Avatar } from 'react-native-paper';
+import {
+  DataTable,
+  Provider,
+  Modal,
+  Portal,
+  Button as MaterialButton,
+  Avatar,
+  Snackbar,
+} from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { Text, View } from '@app/screens/Themed';
-import { getDataSelector } from '@app/store/user/login/selector'
+import { getDataSelector } from '@app/store/user/login/selector';
 import { IUser } from '@app/store/user/login/types';
-import ImagePicker  from 'react-native-image-picker';
-
-export interface option{
+import { updateUser } from '@app/utils/apis';
+export interface option {
   title: string;
-    customButtons: {
-        name: string;
-        title: string;
-    }[];
-    storageOptions: {
-        skipBackup: boolean;
-        path: string;
-    };
-    mediaType: string
+  customButtons: {
+    name: string;
+    title: string;
+  }[];
+  storageOptions: {
+    skipBackup: boolean;
+    path: string;
+  };
+  mediaType: string;
 }
 
 export default function ProfileScreen() {
   const [brands, setBrands] = useState([]);
-
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+  const onDismissSnackBar = () => setVisible(false);
   const user = useSelector(getDataSelector);
-  const [form , setForm] = useState<IUser>(()=>({
+
+  const [form, setForm] = useState<IUser>(() => ({
     user_name: '',
     shop_name: '',
     owner_name: '',
@@ -53,29 +68,26 @@ export default function ProfileScreen() {
     token: '',
   }));
   const [isPending, setIsPending] = useState(false);
-
-  useEffect(()=>{
-    setForm(()=>({
+  useEffect(() => {
+    setForm(() => ({
       ...form,
-      ...user
-    }))
-    console.log(form, "user");
-    
-    // axios.post('/brands/shopkeeper/list_brands',{
-    //   user_id: user?.shopkeeper_id
-    // })
-    // .then(res=>{
-    //   console.log(res);
-    // })
-  },[])
+      ...user,
+    }));
+  }, []);
 
   const handleSubmit = async () => {
-    let res = await axios.post('/api/user/update_user',form);
-
-  }
+    const res = await updateUser(form);
+    if (res.message) {
+      setVisible(true);
+      setMessage(res.message);
+    } else if (res.error) {
+      setVisible(true);
+      setMessage(res.message);
+      setIsError(true);
+    }
+  };
 
   const handleImagePicker = () => {
-    
     // let options: option = {
     //   title: 'Select Image',
     //   customButtons: [
@@ -87,7 +99,6 @@ export default function ProfileScreen() {
     //   },
     //   mediaType: 'photo'
     // };
-
     // ImagePicker.launchImageLibrary({
     //   title: 'Select Image',
     //   customButtons: [
@@ -99,49 +110,53 @@ export default function ProfileScreen() {
     //   },
     //   mediaType: 'photo'
     // }, )
-
-  }
+  };
 
   return (
-    <KeyboardAwareScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={styles.titleWelcomeText}>Profile</Text>
-            {/* <View style={{ display: 'flex' }}> */}
-                <TouchableOpacity style={{...styles.titleWelcomeText, display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%', marginRight:'5%' }}>
-                    <MaterialCommunityIcons name="logout" size={45} color="black" />
-                    <Text style={{ color: 'black' }}>Logout</Text>
-                </TouchableOpacity>
-                {/* <MaterialButton
-                    style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
-                    icon={() => (
-                    <MaterialCommunityIcons name="logout" size={45} color="black" />
-                    )}
-                    mode="contained"
-                    onPress={handleSubmit}
-                >
-                    <Text style={{ color: 'black' }}>Update Profile</Text>
-                </MaterialButton> */}
-            {/* </View>             */}
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text style={styles.titleWelcomeText}>Personal Info</Text>
+          <TouchableOpacity
+            style={{
+              ...styles.titleWelcomeText,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '1%',
+              marginRight: '5%',
+            }}
+          >
+            <MaterialCommunityIcons name="logout" size={45} color="black" />
+            <Text style={{ color: 'black' }}>Logout</Text>
+          </TouchableOpacity>
         </View>
-        {/* <Text style={styles.titleSignText}>List of all brands</Text> */}
       </View>
       <View style={styles.fieldsView}>
         <TouchableOpacity>
-            <Avatar.Image size={150} source={require('@app/assets/images/main.jpeg')} />
+          <Avatar.Image
+            size={150}
+            source={require('@app/assets/images/main.jpeg')}
+          />
         </TouchableOpacity>
       </View>
-      <ScrollView>
+      <KeyboardAwareScrollView>
         <View style={styles.fieldsView}>
-        <View style={styles.inputFieldsMainView}>
+          <View style={styles.inputFieldsMainView}>
             <Text style={styles.labelText}>Email*</Text>
             <View
               style={{
-                ...styles.inputFieldSubView
+                ...styles.inputFieldSubView,
               }}
             >
               <TextInputNative
-                onChangeText={(e)=>setForm(()=>({...form, email: e}))}
+                onChangeText={(e) => setForm(() => ({ ...form, email: e }))}
                 value={form.email}
                 defaultValue={form.email}
                 placeholder="Enter Email"
@@ -158,7 +173,6 @@ export default function ProfileScreen() {
                 }}
               >
                 <TextInputNative
-                  onChangeText={()=>{console.log()}}
                   placeholder="Enter User name"
                   value={form.user_name}
                   defaultValue={form.user_name}
@@ -175,7 +189,7 @@ export default function ProfileScreen() {
                 }}
               >
                 <TextInputNative
-                  onChangeText={()=>console.log()}
+                  onChangeText={() => console.log()}
                   placeholder="Enter Shop Name"
                   value={form.shop_name}
                   defaultValue={form.shop_name}
@@ -185,7 +199,7 @@ export default function ProfileScreen() {
               </View>
             </View>
           </View>
-          
+
           <View style={styles.inputFieldsMainView}>
             <Text style={styles.labelText}>Owner Name</Text>
             <View
@@ -194,33 +208,37 @@ export default function ProfileScreen() {
               }}
             >
               <TextInputNative
-                onChangeText={(e)=>setForm(()=>({...form, owner_name: e}))}
+                onChangeText={(e) =>
+                  setForm(() => ({ ...form, owner_name: e }))
+                }
                 placeholder="Owner Name"
-                keyboardType = "email-address"
+                keyboardType="email-address"
                 style={{ width: '80%', marginLeft: '5%' }}
-                maxLength={15}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputFieldsMainView}>
-            <Text style={styles.labelText}>Owner Phone No</Text>
-            <View
-              style={{
-                ...styles.inputFieldSubView,
-              }}
-            >
-              <TextInputNative
-                onChangeText={(e)=>setForm(()=>({...form, owner_phone_no: e}))}
-                placeholder="Owner Phone No"
-                keyboardType = "numeric"
-                style={{ width: '80%', marginLeft: '5%' }}
-                maxLength={15}
+                maxLength={50}
               />
             </View>
           </View>
 
           <View style={styles.inputFieldsMainView1}>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>Owner Phone No</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                }}
+              >
+                <TextInputNative
+                  onChangeText={(e) => {
+                    setForm(() => ({ ...form, owner_phone_no: e }));
+                  }}
+                  placeholder="Enter Owner Phone No"
+                  value={form.shop_phone_no1}
+                  defaultValue={form.owner_phone_no}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={15}
+                />
+              </View>
+            </View>
             <View style={styles.userNameView}>
               <Text style={styles.labelText}>Shop Phone No</Text>
               <View
@@ -229,126 +247,77 @@ export default function ProfileScreen() {
                 }}
               >
                 <TextInputNative
-                  onChangeText={(e)=>{setForm(()=>({...form, shop_phone_no1: e}))}}
+                  onChangeText={(e) =>
+                    setForm(() => ({ ...form, shop_phone_no1: e }))
+                  }
                   placeholder="Enter Shop Phone No"
                   value={form.shop_phone_no1}
                   defaultValue={form.shop_phone_no1}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={15}
-                />
-              </View>
-            </View>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Shop Other Phone No</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={(e)=>setForm(()=>({...form, shop_phone_no2: e}))}
-                  placeholder="Enter Shop Other Phone No"
-                  value={form.shop_phone_no2}
-                  defaultValue={form.shop_phone_no2}
                   style={{ marginLeft: '11%' }}
                   maxLength={30}
                 />
               </View>
             </View>
           </View>
-
           <View style={styles.inputFieldsMainView}>
             <Text style={styles.labelText}>Address</Text>
             <View
               style={{
                 ...styles.inputFieldSubView,
+                height: 70,
               }}
             >
               <TextInputNative
-                onChangeText={(e)=>setForm(()=>({...form, address:e}))}
-                placeholder="Enter Address"
-                multiline
-                numberOfLines={5}
+                onChangeText={(e) => setForm(() => ({ ...form, address: e }))}
+                placeholder="Enter Your Address"
                 style={{ width: '80%', marginLeft: '5%' }}
-                maxLength={15}
+                multiline={true}
               />
             </View>
           </View>
-
-          {/* <View style={styles.inputFieldsMainView}>
-            <Text style={styles.labelText}>Password*</Text>
-            <View
-              style={{
-                ...styles.inputFieldSubView,
-              }}
-            >
-              <TextInputNative
-                onChangeText={()=>console.log()}
-                placeholder="Enter Your Passwod"
-                secureTextEntry={true}
-                style={{ width: '80%', marginLeft: '5%' }}
-                maxLength={15}
-              />
-            </View>
-          </View> */}
-          <View style={styles.inputFieldsMainView}>
-            {/* <Text style={styles.labelText}>Search</Text> */}
+          <View style={{ ...styles.inputFieldsMainView, marginBottom: 70 }}>
             <View style={styles.UpdateProfileButtonView}>
               {isPending ? (
-              <ActivityIndicator
+                <ActivityIndicator
                   size="large"
                   color="#5460E0"
                   style={styles.activitIndicator}
-              />
+                />
               ) : (
-              <MaterialButton
+                <MaterialButton
                   style={styles.UpdateProfileButton}
-                  // icon={() => (
-                  // <Ionicons name="add" size={20} color="white" />
-                  // )}
                   mode="contained"
                   onPress={handleSubmit}
-              >
-                  <Text style={styles.UpdateProfileButtonText}>Update Profile</Text>
-              </MaterialButton>
+                >
+                  <Text style={styles.UpdateProfileButtonText}>
+                    Update Profile
+                  </Text>
+                </MaterialButton>
               )}
-          </View>
-          {/* <Text style={{ color: 'red', fontSize: 13 }}>
+            </View>
+            {/* <Text style={{ color: 'red', fontSize: 13 }}>
               {form.error}
           </Text> */}
           </View>
-          {/* {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : (
-            <></>
-          )} */}
-          {/* <View style={styles.UpdateProfileButtonView}>
-            {isPending ? (
-              <ActivityIndicator
-                size="large"
-                color="#5460E0"
-                style={styles.activitIndicator}
-              />
-            ) : (
-              <Button
-                style={styles.UpdateProfileButton}
-                mode="contained"
-                onPress={handleLogin}
-              >
-                <Text style={styles.UpdateProfileButtonText}>Submit</Text>
-              </Button>
-            )}
-          </View> */}
         </View>
-      </ScrollView>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        style={{
+          backgroundColor: isError ? 'red' : '#5460E0',
+          marginBottom: '6%',
+        }}
+      >
+        <Text style={{ color: 'white' }}>{message}</Text>
+      </Snackbar>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F0F0F8',
-    height: '100%',
     marginTop: Constants.statusBarHeight,
   },
   titleContainer: {
@@ -373,7 +342,7 @@ const styles = StyleSheet.create({
   fieldsView: {
     width: '96%',
     alignItems: 'center',
-    marginTop: '5%',
+    marginVertical: '5%',
     backgroundColor: 'transparent',
   },
   inputFieldsMainView: {
@@ -491,11 +460,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 20,
   },
   checkbox: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   label: {
     margin: 8,

@@ -14,10 +14,9 @@ export type RootStackParamList = {
 };
 
 export type BottomTabParamList = {
+  Products: undefined;
   Brand: undefined;
-  AddBrand: undefined;
-  TabTwo: undefined;
-  TabThree: undefined;
+  AddProduct: undefined;
   Profle: undefined
 };
 
