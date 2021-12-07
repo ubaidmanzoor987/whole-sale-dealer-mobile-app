@@ -1,36 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import axios from '@app/hooks/useAxios';
+import { useSelector } from 'react-redux';
 import {
   StyleSheet,
   ActivityIndicator,
   TextInput as TextInputNative,
-  Alert,
-  Button,
-  CheckBox,
   TouchableOpacity,
   ScrollView,
+  Alert,
+  Image,
 } from 'react-native';
 import Constants from 'expo-constants';
-import {
-  DataTable,
-  Provider,
-  Modal,
-  Portal,
-  Button as MaterialButton,
-  Avatar,
-  Snackbar,
-} from 'react-native-paper';
+import { Button as MaterialButton, Avatar, Snackbar } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import {
-  FontAwesome,
-  Ionicons,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector } from '@app/store/user/login/selector';
 import { IUser } from '@app/store/user/login/types';
 import { updateUser } from '@app/utils/apis';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
+import * as ImageManipulator from 'expo-image-manipulator';
+
 export interface option {
   title: string;
   customButtons: {
@@ -51,6 +41,10 @@ export default function ProfileScreen() {
   const [isError, setIsError] = useState(false);
   const onDismissSnackBar = () => setVisible(false);
   const user = useSelector(getDataSelector);
+  const [selectedImage, setSelectedImage] = React.useState<String>('');
+  const [profileImgUrl, setProfileImgUrl] = React.useState<String | undefined>(
+    ''
+  );
 
   const [form, setForm] = useState<IUser>(() => ({
     user_name: '',
@@ -67,7 +61,9 @@ export default function ProfileScreen() {
     id: 0,
     token: '',
   }));
+
   const [isPending, setIsPending] = useState(false);
+
   useEffect(() => {
     setForm(() => ({
       ...form,
@@ -87,29 +83,86 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleImagePicker = () => {
-    // let options: option = {
-    //   title: 'Select Image',
-    //   customButtons: [
-    //     { name: 'customOptionKey', title: 'Choose Photo from Custom Option' },
-    //   ],
-    //   storageOptions: {
-    //     skipBackup: true,
-    //     path: 'images',
-    //   },
-    //   mediaType: 'photo'
-    // };
-    // ImagePicker.launchImageLibrary({
-    //   title: 'Select Image',
-    //   customButtons: [
-    //     { name: 'customOptionKey', title: 'Choose Photo from Custom Option' },
-    //   ],
-    //   storageOptions: {
-    //     skipBackup: true,
-    //     path: 'images',
-    //   },
-    //   mediaType: 'photo'
-    // }, )
+  const askForPermission = async () => {
+    const permissionResult = await Permissions.askAsync(Permissions.CAMERA);
+    if (permissionResult.status !== 'granted') {
+      Alert.alert('no permissions to access camera!', 'ok');
+      return false;
+    }
+    return true;
+  };
+
+  const getImageFromCamera = async () => {
+    try {
+      const hasPermission = await askForPermission();
+      if (!hasPermission) {
+        console.log('No Permissions');
+        return;
+      }
+      let capturedImage = await ImagePicker.launchCameraAsync({
+        allowsEditing: false,
+        aspect: [4, 3],
+        quality: 1,
+        base64: true,
+      });
+
+      if (!capturedImage.cancelled) {
+        processImage(capturedImage.uri);
+      }
+    } catch (ex) {
+      console.log('Exception in Opening Camera as', ex);
+    }
+  };
+
+  const getImageFromGallery = async () => {
+    try {
+      const hasPermission = await askForPermission();
+      if (!hasPermission) {
+        console.log('No Permissions');
+        return;
+      }
+      const galleryImage = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        base64: true,
+      });
+      if (!galleryImage.cancelled) {
+        processImage(galleryImage.uri);
+      }
+    } catch (ex) {
+      console.log('Exception in Opening Camera as', ex);
+    }
+  };
+
+  const processImage = async (imageUri) => {
+    try {
+      let processedImage = (await ImageManipulator.manipulateAsync(
+        imageUri,
+        [{ resize: { width: 400 } }],
+        { format: 'jpeg' as any, base64: true }
+      )) as any;
+      setProfileImgUrl(`data:image/jpeg;base64,${processedImage.base64}`);
+      setSelectedImage(processedImage.base64);
+      const data = {
+        image: `data:image/jpeg;base64,${processedImage.base64}`,
+        user_id: form.id,
+        email: form.email,
+        shop_name: form.email,
+      };
+      const res = await updateUser(data);
+      if (res.message) {
+        setVisible(true);
+        setMessage(res.message);
+      } else if (res.error) {
+        setVisible(true);
+        setMessage(res.message);
+        setIsError(true);
+      }
+    } catch (ex) {
+      console.log('Exception in processImage', ex);
+    }
   };
 
   return (
@@ -139,9 +192,15 @@ export default function ProfileScreen() {
         </View>
       </View>
       <View style={styles.fieldsView}>
-        <TouchableOpacity>
-          <Avatar.Image
-            size={150}
+        <TouchableOpacity onPress={getImageFromGallery}>
+          <Image
+            style={{
+              width: 150,
+              height: 150,
+              resizeMode: 'contain',
+              borderWidth: 1,
+              borderColor: 'red',
+            }}
             source={require('@app/assets/images/main.jpeg')}
           />
         </TouchableOpacity>
