@@ -178,19 +178,6 @@ export default function ProfileScreen() {
           }}
         >
           <Text style={styles.titleWelcomeText}>Personal Info</Text>
-          <TouchableOpacity
-            style={{
-              ...styles.titleWelcomeText,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: '1%',
-              marginRight: '5%',
-            }}
-          >
-            <MaterialCommunityIcons name="logout" size={45} color="black" />
-            <Text style={{ color: 'black' }}>Logout</Text>
-          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.fieldsView}>

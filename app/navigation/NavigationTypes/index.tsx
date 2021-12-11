@@ -11,19 +11,21 @@ export type RootStackParamList = {
   NotFound: undefined;
   ForgetPassword: undefined;
   ResetPassword: undefined;
+  AddProductScreen: undefined;
 };
 
 export type BottomTabParamList = {
   Products: undefined;
   Brand: undefined;
   AddProduct: undefined;
-  Profle: undefined
+  Profle: undefined;
 };
 
 export type BrandParamList = {
   BrandScreen: undefined;
   AddBrandScreen: undefined;
   ProfileScreen: undefined;
+  ProductScreen: undefined;
 };
 
 export type TabTwoParamList = {

@@ -6,6 +6,7 @@ import * as React from 'react';
 import Colors from '@app/constants/Colors';
 import useColorScheme from '@app/hooks/useColorScheme';
 import BrandScreen from '@app/screens/BrandScreen';
+import ProductScreen from '@app/screens/ProductScreen';
 
 import {
   BottomTabParamList,
@@ -46,7 +47,7 @@ export default function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="AddProduct"
-        component={ProfileNavigator}
+        component={ProductNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
@@ -78,4 +79,12 @@ function ProfileNavigator() {
       <HomeStack.Screen name="ProfileScreen" component={ProfileScreen} />
     </HomeStack.Navigator>
   );
+}
+
+function ProductNavigator(){
+  return (
+    <HomeStack.Navigator screenOptions ={{ headerShown: false }}>
+      <HomeStack.Screen name="ProductScreen" component={ProductScreen} />
+    </HomeStack.Navigator>
+  )
 }
