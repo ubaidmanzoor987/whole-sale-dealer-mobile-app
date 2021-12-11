@@ -5,6 +5,8 @@ import loginReducer from './user/login/reducer';
 import forgetReducer from './user/forgotPassword/reducer';
 import addBrandReducer from './brands/addBrand/reducer';
 import listBrandReducer from './brands/listBrands/reducer';
+import addProductReducer from './products/addProduct/reducer';
+import listProductReducer from './products/listProducts/reducer';
 
 const rootReducer = combineReducers({
   register: registerReducer,
@@ -12,6 +14,8 @@ const rootReducer = combineReducers({
   forget: forgetReducer,
   addBrand: addBrandReducer,
   brands: listBrandReducer,
+  products: listProductReducer,
+  addProduct: addProductReducer,
 });
 
 export type AppState = ReturnType<typeof rootReducer>;

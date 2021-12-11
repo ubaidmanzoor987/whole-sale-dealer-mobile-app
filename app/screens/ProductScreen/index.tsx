@@ -9,9 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  
 } from 'react-native';
-import { Button, Snackbar } from 'react-native-paper';
+import { Snackbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
@@ -23,11 +22,10 @@ import {
 import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
-import ProductBottomSheet from './productBottomSheet';
+import ProductBottomSheet from './editViewproductBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
 import { deleteBrand } from '@app/utils/apis';
+import { IProducts } from '@app/store/products/addProduct/types';
 
 interface Props {
   rows?: any;
@@ -36,12 +34,13 @@ interface Props {
 }
 
 interface renderProps {
+  // product?: IProducts;
   product?: any;
   index?: any;
   type?: any;
 }
 
-function TableWidget(props: Props) {
+function ProductScreen() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -57,11 +56,68 @@ function TableWidget(props: Props) {
   const user = useSelector(getUserSelector);
   const onDismissSnackBar = () => setVisible(false);
 
-  useEffect(() => {
-    // if (brands.length === 0)
-    //   dispatch(fetchBrandListRequest({ user_id: user && user.id }));
-  }, [user]);
-
+  const products = [
+    {
+      product_id  : 1,
+      product_name : 'product_name',
+      image1 : 'image1',
+      image2 : 'image2',
+      image3 : 'image3',
+      price : 'price',
+      quantities : 'quantities',
+      product_des : 'product_des',
+      brand_id : 'brand_id',
+      user_id : 'user_id',
+    },
+    {
+      product_id  : 2,
+      product_name : 'product_name',
+      image1 : 'image1',
+      image2 : 'image2',
+      image3 : 'image3',
+      price : 'price',
+      quantities : 'quantities',
+      product_des : 'product_des',
+      brand_id : 'brand_id',
+      user_id : 'user_id',
+    },
+    {
+      product_id  : 'product_id3',
+      product_name : 'product_name',
+      image1 : 'image1',
+      image2 : 'image2',
+      image3 : 'image3',
+      price : 'price',
+      quantities : 'quantities',
+      product_des : 'product_des',
+      brand_id : 'brand_id',
+      user_id : 'user_id',
+    },
+    {
+      product_id  : 'product_id4',
+      product_name : 'product_name',
+      image1 : 'image1',
+      image2 : 'image2',
+      image3 : 'image3',
+      price : 'price',
+      quantities : 'quantities',
+      product_des : 'product_des',
+      brand_id : 'brand_id',
+      user_id : 'user_id',
+    },
+    {
+      product_id  : 'product_id5',
+      product_name : 'product_name',
+      image1 : 'image1',
+      image2 : 'image2',
+      image3 : 'image3',
+      price : 'price',
+      quantities : 'quantities',
+      product_des : 'product_des',
+      brand_id : 'brand_id',
+      user_id : 'user_id',
+    },
+  ];
   const cols = [
     {
       name: 'Image',
@@ -88,7 +144,6 @@ function TableWidget(props: Props) {
       col_name: 'action',
       type: 'string',
     },
-    
   ];
 
   const sortColumn = (col) => {
@@ -128,7 +183,11 @@ function TableWidget(props: Props) {
     </View>
   );
 
-  const openAddBrandSheet = () => {
+  const navigateToAddProducts = () => {
+    navigation.navigate('AddProductScreen');
+  };
+
+  const openViewEditBrandSheet = () => {
     setRow({});
     setIsEdit(false);
     productsBottomSheetRef.current.open();
@@ -179,48 +238,40 @@ function TableWidget(props: Props) {
         <View
           style={{
             ...styles.tableRow,
-            backgroundColor: itemData.index % 2 == 1 ? '#CFD5E5' : 'white',
+            backgroundColor: 'white',
           }}
         >
-          <Image style={{ width: 50, height: 50 }} source={{ uri: 'https://media.istockphoto.com/photos/cardboard-box-isolated-on-white-background-with-clipping-path-picture-id1282219840?b=1&k=20&m=1282219840&s=170667a&w=0&h=FAo7lLqh8cmjPzAmXMjnsVx-fZxBn1iEmchcAH_jQTw=' }} />
+          <View
+            style={{
+              width: '15%',
+            }}
+          >
+            <Image
+              style={{
+                width: 50,
+                height: 50,
+              }}
+              source={{
+                uri: 'https://media.istockphoto.com/photos/cardboard-box-isolated-on-white-background-with-clipping-path-picture-id1282219840?b=1&k=20&m=1282219840&s=170667a&w=0&h=FAo7lLqh8cmjPzAmXMjnsVx-fZxBn1iEmchcAH_jQTw=',
+              }}
+            />
+          </View>
           <Text style={styles.columnRowTxt}> sadasdas</Text>
           <Text style={styles.columnRowTxt}> 7</Text>
           <Text style={styles.columnRowTxt}> 5000</Text>
-          {/* <Text style={styles.columnRowTxt}>
-            {itemData.item.own_brand === 'true' ? 'Yes' : 'No'}
-          </Text> */}
           <View
             style={{
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '30%',
+              borderWidth: 1,
+              padding: 5
             }}
           >
-            <TouchableOpacity>
-              <Text>View Detail</Text>
+            <TouchableOpacity onPress={openViewEditBrandSheet}>
+              <Text>View Details</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={{ marginRight: '3%' }}
-              onPress={() => {
-                handleEditClick(itemData);
-              }}
-            >
-              <MaterialCommunityIcons
-                name="pencil"
-                size={20}
-                color={'#5460E0'}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDelete(itemData)}>
-              <MaterialCommunityIcons
-                name="delete"
-                size={20}
-                color={'red'}
-                style={{ opacity: 0.8 }}
-              />
-            </TouchableOpacity> */}
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -229,18 +280,13 @@ function TableWidget(props: Props) {
 
   return (
     <View style={styles.container}>
-      {/* <FilterWidget
-        columns={props.use_dashboard_cols ? columns : cols}
-        stocks={stocksData}
-        setStocks={setStocksProps}
-      /> */}
       <View style={styles.titleContainer}>
         <Text style={styles.titleWelcomeText}>Products</Text>
         <Text style={styles.titleSignText}>List of all products</Text>
       </View>
       <TouchableOpacity
         style={styles.addBrandTouchable}
-        onPress={openAddBrandSheet}
+        onPress={navigateToAddProducts}
       >
         <MaterialCommunityIcons
           name="plus-box"
@@ -256,17 +302,16 @@ function TableWidget(props: Props) {
           Add Product
         </Text>
       </TouchableOpacity>
-      
-     
+
       <FlatList
-        data={brands}
+        data={products}
         style={styles.flatListContainer}
         keyExtractor={(item, index) => index + ''}
         ListHeaderComponent={tableHeader}
         stickyHeaderIndices={[0]}
-        ListFooterComponent={
-          isPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
-        }
+        // ListFooterComponent={
+        //   isPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
+        // }
         ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
         renderItem={({ item, index }) => (
           <RenderedItemsData product={item} index={index} />
@@ -294,7 +339,7 @@ function TableWidget(props: Props) {
   );
 }
 
-export default React.memo(TableWidget);
+export default ProductScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -340,10 +385,12 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    height: 45,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
     display: 'flex',
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgrey'
   },
   columnHeader: {
     width: '20%',

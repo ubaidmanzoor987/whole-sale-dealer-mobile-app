@@ -7,10 +7,12 @@ import Colors from '@app/constants/Colors';
 import useColorScheme from '@app/hooks/useColorScheme';
 import BrandScreen from '@app/screens/BrandScreen';
 import ProductScreen from '@app/screens/ProductScreen';
-
+import AddProductScreen from '@app/screens/ProductScreen/AddProductScreen';
 import {
   BottomTabParamList,
-  BrandParamList,
+  ProfileStacksList,
+  ProductStacksList,
+  BrandStacksList
 } from '../NavigationTypes';
 import ProfileScreen from '@app/screens/ProfileScreen';
 
@@ -26,28 +28,21 @@ export default function BottomTabNavigator() {
     >
       <BottomTab.Screen
         name="Products"
-        component={HomeNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-        }}
-      />
-      <BottomTab.Screen
-        name="Brand"
-        component={HomeNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-        }}
-      />
-      <BottomTab.Screen
-        name="Profle"
-        component={ProfileNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
-        }}
-      />
-      <BottomTab.Screen
-        name="AddProduct"
         component={ProductNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="aperture" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Brands"
+        component={BrandNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="md-library" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Profile"
+        component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
@@ -63,28 +58,31 @@ function TabBarIcon(props: {
   return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
 }
 
-const HomeStack = createStackNavigator<BrandParamList>();
+const BrandStack = createStackNavigator<BrandStacksList>();
+const ProductStack = createStackNavigator<ProductStacksList>();
+const ProfileStack = createStackNavigator<ProfileStacksList>();
 
-function HomeNavigator() {
+function BrandNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStack.Screen name="BrandScreen" component={BrandScreen} />
-    </HomeStack.Navigator>
+    <BrandStack.Navigator screenOptions={{ headerShown: false }}>
+      <BrandStack.Screen name="BrandScreen" component={BrandScreen} />
+    </BrandStack.Navigator>
   );
 }
 
 function ProfileNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStack.Screen name="ProfileScreen" component={ProfileScreen} />
-    </HomeStack.Navigator>
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+    </ProfileStack.Navigator>
   );
 }
 
 function ProductNavigator(){
   return (
-    <HomeStack.Navigator screenOptions ={{ headerShown: false }}>
-      <HomeStack.Screen name="ProductScreen" component={ProductScreen} />
-    </HomeStack.Navigator>
+    <ProductStack.Navigator screenOptions ={{ headerShown: false }}>
+      <ProductStack.Screen name="ProductScreen" component={ProductScreen} />
+      <ProductStack.Screen name="AddProductScreen" component={AddProductScreen} />
+    </ProductStack.Navigator>
   )
 }

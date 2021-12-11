@@ -16,18 +16,26 @@ export type RootStackParamList = {
 
 export type BottomTabParamList = {
   Products: undefined;
-  Brand: undefined;
-  AddProduct: undefined;
-  Profle: undefined;
+  Brands: undefined;
+  Profile: undefined;
 };
 
-export type BrandParamList = {
+export type BrandStacksList = {
   BrandScreen: undefined;
   AddBrandScreen: undefined;
-  ProfileScreen: undefined;
-  ProductScreen: undefined;
 };
 
-export type TabTwoParamList = {
-  TabTwoScreen: undefined;
+export type ProductStacksList = {
+  ProductScreen: undefined;
+  AddProductScreen: undefined;
 };
+
+export type HomeStacksList = {
+  BrandScreen: undefined;
+  AddBrandScreen: undefined;
+};
+
+export type ProfileStacksList = {
+  ProfileScreen: undefined;
+};
+

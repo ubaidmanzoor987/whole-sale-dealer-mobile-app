@@ -18,7 +18,7 @@ import { getDataSelector } from '@app/store/user/login/selector';
 import { IUser } from '@app/store/user/login/types';
 import { updateUser } from '@app/utils/apis';
 import * as ImagePicker from 'expo-image-picker';
-import * as Permissions from 'expo-permissions';
+import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export interface option {
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
   };
 
   const askForPermission = async () => {
-    const permissionResult = await Permissions.askAsync(Permissions.CAMERA);
+    const permissionResult = await Camera.requestCameraPermissionsAsync();
     if (permissionResult.status !== 'granted') {
       Alert.alert('no permissions to access camera!', 'ok');
       return false;
@@ -131,7 +131,6 @@ export default function ProfileScreen() {
       if (!galleryImage.cancelled) {
         processImage(galleryImage.uri);
         console.log(galleryImage.uri);
-        
       }
     } catch (ex) {
       console.log('Exception in Opening Camera as', ex);
@@ -201,7 +200,7 @@ export default function ProfileScreen() {
               height: 150,
               resizeMode: 'contain',
               borderWidth: 1,
-              borderColor: 'red',
+              borderColor: 'lightgrey',
             }}
             source={require('@app/assets/images/main.jpeg')}
           />
