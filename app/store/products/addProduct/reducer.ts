@@ -4,7 +4,7 @@ import { ProductsActions, ProductsState, IProducts } from './types';
 
 const initialState: ProductsState = {
   pending: false,
-  data: [],
+  data: {} as IProducts,
   error: "",
   success: false,
   message: ""
@@ -31,7 +31,7 @@ export default (state = initialState, action: ProductsActions): ProductsState =>
         pending: false,
         success: action.payload.response.success || false,
         message: action.payload.response.message || 'failed',
-        data: action.payload.response.data || [],
+        data: action.payload.response.data || {} as IProducts,
         error: action.payload.response.error,
       };
     case actions.Fetch_Products_Add_Clear:

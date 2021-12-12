@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -16,14 +16,24 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
-import { updateUser } from '@app/utils/apis';
 import CameraBottomSheet from '@app/screens/MediaScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ImageResult } from 'expo-image-manipulator';
+import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+import {
+  fetchProductsAddClear,
+  fetchProductsAddRequest,
+} from '@app/store/products/addProduct/actions';
+import {
+  getaddProductelector,
+  getErrorSelector,
+  getPendingSelector,
+} from '@app/store/products/addProduct/selector';
 
 interface IAddProduct {
-  image1?: string;
-  image2?: string;
-  image3?: string;
+  image1?: ImageResult;
+  image2?: ImageResult;
+  image3?: ImageResult;
   brand_id: number;
   user_id: number;
   product_name: string;
@@ -64,6 +74,7 @@ const icons = {
   },
 };
 export default function AddProductScreen() {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
@@ -71,15 +82,30 @@ export default function AddProductScreen() {
   const onDismissSnackBar = () => setVisible(false);
   const user = useSelector(getUserSelector);
   const brands = useSelector(getBrandSelector);
-  const [selectedImage, setSelectedImage] = React.useState<string>('');
+  const [selectedImage, setSelectedImage] = React.useState<string>('image1');
   const [selectedBrand, setSelectedBrand] = React.useState<any>([]);
   const [brandLabel, setBrandLabel] = React.useState<string>('Select Brand');
   const [openCameraModal, setOpenCameraModal] = React.useState<boolean>(false);
-
+  const [previewImage, setPreviewImage] = React.useState<ImageResult>();
   const [form, setForm] = useState<IAddProduct>(() => ({
-    image1: '',
-    image2: '',
-    image3: '',
+    image1: {
+      uri: '',
+      height: -1,
+      width: -1,
+      base64: '',
+    },
+    image2: {
+      uri: '',
+      height: -1,
+      width: -1,
+      base64: '',
+    } as any,
+    image3: {
+      uri: '',
+      height: 0,
+      width: 0,
+      base64: '',
+    } as any,
     user_id: -1,
     brand_id: -1,
     quantity: '1',
@@ -88,27 +114,61 @@ export default function AddProductScreen() {
     product_description: '',
     error: '',
   }));
+  const addProductData = useSelector(getaddProductelector);
+  const addProductPending = useSelector(getPendingSelector);
+  const addProductError = useSelector(getErrorSelector);
+
+  useEffect(() => {
+    if (addProductData && addProductData.product_name) {
+      setMessage('product successfully inserted');
+      dispatch(fetchProductsAddClear());
+      setForm(() => ({
+        image1: {
+          uri: '',
+          height: -1,
+          width: -1,
+          base64: '',
+        },
+        image2: {
+          uri: '',
+          height: -1,
+          width: -1,
+          base64: '',
+        } as any,
+        image3: {
+          uri: '',
+          height: 0,
+          width: 0,
+          base64: '',
+        } as any,
+        user_id: -1,
+        brand_id: -1,
+        quantity: '1',
+        price: '',
+        product_name: '',
+        product_description: '',
+        error: '',
+      }));
+      setPreviewImage({} as any);
+      setSelectedBrand([]);
+      setBrandLabel("Select Brand");
+      goBack();
+    }
+  }, [addProductData]);
 
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
-    setForm(() => ({
-      ...form,
-      ...user,
-    }));
-  }, []);
-
-  const handleSubmit = async () => {
-    const res = await updateUser(form);
-    if (res.message) {
-      setVisible(true);
-      setMessage(res.message);
-    } else if (res.error) {
-      setVisible(true);
-      setMessage(res.message);
-      setIsError(true);
+    if (previewImage && previewImage.uri) {
+      setForm(() => ({ ...form, [selectedImage]: previewImage }));
     }
-  };
+  }, [previewImage]);
+
+  useEffect(() => {
+    if (brands.length === 0 && user) {
+      dispatch(fetchBrandListRequest({ user_id: user.id }));
+    }
+  }, [brands.length === 0]);
 
   const goBack = () => {
     navigation.goBack();
@@ -123,7 +183,7 @@ export default function AddProductScreen() {
         }));
         break;
       case 'minus':
-        if (Number(form.quantity) >= 1) {
+        if (Number(form.quantity) > 1) {
           setForm(() => ({
             ...form,
             quantity: (Number(form.quantity) - 1).toString(),
@@ -144,14 +204,22 @@ export default function AddProductScreen() {
     setForm(() => ({
       ...form,
       brand_id: col[0].id,
+      error: '',
     }));
     setBrandLabel(col[0].brand_name);
   };
 
-  const addImageTag = (onPress: any, image_number) => {
+  const addImageTag = (
+    setSelectImage: any,
+    image_number: number,
+    image: ImageResult | undefined
+  ) => {
     return (
       <TouchableOpacity
-        onPress={onPress}
+        onPress={() => {
+          setSelectImage('image' + image_number.toString());
+          setPreviewImage(image);
+        }}
         style={{
           borderWidth: 1,
           width: '20%',
@@ -162,13 +230,24 @@ export default function AddProductScreen() {
           marginLeft: '2%',
         }}
       >
-        <Image
-          style={{
-            width: 70,
-            height: 70,
-          }}
-          source={require('@app/assets/images/addImagePlaceholder.png')}
-        />
+        {image && image.uri ? (
+          <Image
+            style={{
+              width: '100%',
+              height: 70,
+            }}
+            source={{ uri: image.uri }}
+          />
+        ) : (
+          <Image
+            style={{
+              width: '100%',
+              height: 70,
+            }}
+            source={require('@app/assets/images/sampleImage.png')}
+          />
+        )}
+
         <Text>Image {image_number}</Text>
       </TouchableOpacity>
     );
@@ -176,6 +255,47 @@ export default function AddProductScreen() {
 
   const showCameraModal = () => {
     setOpenCameraModal(true);
+  };
+
+  const handleSubmit = async () => {
+    if (form.product_name.length === 0) {
+      setForm(() => ({ ...form, error: 'Product Name is Required' }));
+      return;
+    } else if (form.quantity.length === 0) {
+      setForm(() => ({ ...form, error: 'Quantity is Required' }));
+      return;
+    } else if (form.price.length === 0) {
+      setForm(() => ({ ...form, error: 'Price is Required' }));
+      return;
+    } else if (selectedBrand && selectedBrand.length === 0) {
+      setForm(() => ({ ...form, error: 'Brand is required' }));
+      return;
+    }
+    const data = {
+      product_name: form.product_name,
+      price: form.price,
+      quantities: form.quantity,
+      product_des: form.product_description,
+      brand_id: selectedBrand[0].id,
+      user_id: user && user.id,
+    };
+    if (form.image1 && form.image1.base64 !== '') {
+      data['image1'] = `data:image/jpeg;base64,${form.image1.base64},`;
+    }
+    if (form.image2 && form.image2.base64 !== '') {
+      data['image2'] = `data:image/jpeg;base64,${form.image2.base64},`;
+    }
+    if (form.image3 && form.image3.base64 !== '') {
+      data['image3'] = `data:image/jpeg;base64,${form.image3.base64},`;
+    }
+    dispatch(fetchProductsAddRequest(data));
+    setVisible(true);
+  };
+
+  const onChange = (name: string, value: any) => {
+    if (name) {
+      setForm(() => ({ ...form, [name]: value, error: '' }));
+    }
   };
 
   return (
@@ -202,26 +322,42 @@ export default function AddProductScreen() {
         style={{
           backgroundColor: 'transparent',
           marginVertical: 10,
+          width: '98%',
         }}
       >
         <View
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: '100%',
             backgroundColor: 'transparent',
           }}
         >
           <TouchableOpacity
-            style={{ borderWidth: 1, borderColor: 'lightgrey' }}
+            style={{
+              backgroundColor: 'transparent',
+              borderColor: 'lightgrey',
+              borderWidth: 1,
+              width: '90%',
+              marginLeft: '5%',
+            }}
+            onPress={showCameraModal}
           >
-            <Image
-              style={{
-                width: 430,
-                height: 300,
-              }}
-              source={require('@app/assets/images/sampleImage.png')}
-            />
+            {previewImage && previewImage.base64 ? (
+              <Image
+                style={{
+                  width: '100%',
+                  height: 240,
+                }}
+                source={{ uri: previewImage.uri }}
+              />
+            ) : (
+              <Image
+                style={{
+                  width: '100%',
+                  height: 240,
+                }}
+                source={require('@app/assets/images/sampleImage.png')}
+              />
+            )}
           </TouchableOpacity>
         </View>
         <View
@@ -233,9 +369,9 @@ export default function AddProductScreen() {
             marginLeft: '3%',
           }}
         >
-          {addImageTag(showCameraModal, 1)}
-          {addImageTag(showCameraModal, 2)}
-          {addImageTag(showCameraModal, 3)}
+          {addImageTag(setSelectedImage, 1, form.image1)}
+          {addImageTag(setSelectedImage, 2, form.image2)}
+          {addImageTag(setSelectedImage, 3, form.image3)}
         </View>
       </View>
       <KeyboardAwareScrollView>
@@ -244,9 +380,7 @@ export default function AddProductScreen() {
             <Text style={styles.labelText}>Product Name*</Text>
             <View style={styles.inputFieldSubView}>
               <TextInputNative
-                onChangeText={(e) =>
-                  setForm(() => ({ ...form, product_name: e }))
-                }
+                onChangeText={(e) => onChange('product_name', e)}
                 value={form.product_name}
                 defaultValue={form.product_name}
                 placeholder="Product Name"
@@ -271,9 +405,7 @@ export default function AddProductScreen() {
                 }}
               >
                 <TextInputNative
-                  onChangeText={(e) =>
-                    setForm(() => ({ ...form, quantity: e }))
-                  }
+                  onChangeText={(e) => onChange('quantity', e)}
                   value={form.quantity}
                   defaultValue={form.quantity}
                   placeholder="Quantity"
@@ -312,11 +444,12 @@ export default function AddProductScreen() {
             <Text style={styles.labelText}>Price*</Text>
             <View style={styles.inputFieldSubView}>
               <TextInputNative
-                onChangeText={(e) => setForm(() => ({ ...form, price: e }))}
+                onChangeText={(e) => onChange('price', e)}
                 value={form.price}
                 defaultValue={form.price}
                 placeholder="Price"
                 style={styles.inputField}
+                keyboardType="decimal-pad"
               />
             </View>
           </View>
@@ -354,9 +487,7 @@ export default function AddProductScreen() {
             <Text style={styles.labelText}>Product Description</Text>
             <View style={{ ...styles.inputFieldSubView, height: 100 }}>
               <TextInputNative
-                onChangeText={(e) =>
-                  setForm(() => ({ ...form, product_description: e }))
-                }
+                onChangeText={(e) => onChange('product_description', e)}
                 value={form.product_description}
                 defaultValue={form.product_description}
                 placeholder="Product Description"
@@ -364,9 +495,24 @@ export default function AddProductScreen() {
               />
             </View>
           </View>
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: '95%',
+              marginLeft: '15%',
+            }}
+          >
+            {form.error && form.error?.length > 0 ? (
+              <Text style={{ color: 'red', fontSize: 13, textAlign: 'left' }}>
+                {form.error}
+              </Text>
+            ) : (
+              <></>
+            )}
+          </View>
           <View style={{ ...styles.inputFieldsMainView, marginBottom: 70 }}>
             <View style={styles.UpdateProfileButtonView}>
-              {isPending ? (
+              {addProductPending ? (
                 <ActivityIndicator
                   size="large"
                   color="#5460E0"
@@ -379,12 +525,11 @@ export default function AddProductScreen() {
                   onPress={handleSubmit}
                 >
                   <Text style={styles.UpdateProfileButtonText}>
-                    Update Profile
+                    Add Product
                   </Text>
                 </MaterialButton>
               )}
             </View>
-            <Text style={{ color: 'red', fontSize: 13 }}>{form.error}</Text>
           </View>
         </View>
       </KeyboardAwareScrollView>
@@ -401,8 +546,7 @@ export default function AddProductScreen() {
       <CameraBottomSheet
         openModal={openCameraModal}
         closeModal={setOpenCameraModal}
-        selectedImage={selectedImage}
-        setSelectedImage={setSelectedImage}
+        setSelectedImage={setPreviewImage}
       />
     </ScrollView>
   );

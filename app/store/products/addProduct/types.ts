@@ -1,7 +1,6 @@
 import * as actionTypes from './actionTypes';
 
 export interface IProducts {
-  product_id?: number;
   product_name: string;
   image1?: string;
   image2?: string;
@@ -20,13 +19,13 @@ export interface requestProducts {
 export interface responseProducts {
   success: boolean;
   message: string;
-  data: IProducts[] | [];
+  data: IProducts;
   error: string | null | any;
 }
 
 export interface ProductsState {
   pending: boolean;
-  data: IProducts[] | [];
+  data: IProducts;
   error: string | null;
   success: boolean;
   message: string;

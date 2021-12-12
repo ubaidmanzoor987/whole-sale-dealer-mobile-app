@@ -5,10 +5,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Camera, Constants } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ImageResult } from 'expo-image-manipulator';
 
 interface Props {
   openModal: boolean;
-  selectedImage: string;
   setSelectedImage: any;
   closeModal: any;
 }
@@ -70,7 +70,6 @@ export default function MediaScreen({
       });
       if (!galleryImage.cancelled) {
         processImage(galleryImage.uri);
-        console.log(galleryImage);
       }
     } catch (ex) {
       console.log('Exception in Opening Camera as', ex);
@@ -83,9 +82,10 @@ export default function MediaScreen({
         imageUri,
         [{ resize: { width: 400 } }],
         { format: 'jpeg' as any, base64: true }
-      )) as any;
+      )) as ImageResult;
       // setSelectedImage(`data:image/jpeg;base64,${processedImage.base64}`);
       setSelectedImage(processedImage);
+      hideModal();
     } catch (ex) {
       console.log('Exception in processImage', ex);
     }
@@ -98,18 +98,20 @@ export default function MediaScreen({
 
   return (
     <Modal
-      isVisible={openModal}
+      isVisible={visible}
       onDismiss={hideModal}
       style={{
-        backgroundColor: 'white',
-        height: 400,
-
+        backgroundColor: 'lightgrey',
+        marginVertical: '70%',
       }}
       animationIn="slideInUp"
       onBackdropPress={hideModal}
     >
-      <TouchableOpacity onPress={hideModal}>
-        <Text>CLose</Text>
+      <TouchableOpacity
+        onPress={hideModal}
+        style={{ width: '100%', alignItems: 'flex-end' }}
+      >
+        <MaterialCommunityIcons name="close" size={20} />
       </TouchableOpacity>
       <View
         style={{
@@ -123,19 +125,27 @@ export default function MediaScreen({
       >
         <TouchableOpacity
           onPress={getImageFromCamera}
-          style={{ borderWidth: 1, borderColor: 'lightgrey' }}
+          style={{
+            width: '25%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <MaterialCommunityIcons name="camera" size={40} />
+          <MaterialCommunityIcons name="camera" size={60} />
+          <Text style={{ textAlign: 'center' }}>Camera</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={getImageFromGallery}
           style={{
-            marginLeft: '5%',
-            borderWidth: 1,
-            borderColor: 'lightgrey',
+            width: '25%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="image-album" size={40} />
+          <MaterialCommunityIcons name="image-edit" size={60} />
+          <Text style={{ textAlign: 'center' }}>Gallery</Text>
         </TouchableOpacity>
       </View>
     </Modal>

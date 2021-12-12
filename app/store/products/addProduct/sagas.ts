@@ -12,7 +12,7 @@ import {
 } from './types';
 
 const ProductsAdd = (body: requestProducts) =>
-  axios.post<responseProducts>('product/shopkeeper/Add', body);
+  axios.post<responseProducts>('product/insert', body);
 
 function* fetchProductsAddSaga(action: FetchProductsRequest): any {
   try {
