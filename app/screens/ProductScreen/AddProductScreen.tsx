@@ -29,6 +29,7 @@ import {
   getErrorSelector,
   getPendingSelector,
 } from '@app/store/products/addProduct/selector';
+import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
 
 interface IAddProduct {
   image1?: ImageResult;
@@ -152,6 +153,9 @@ export default function AddProductScreen() {
       setPreviewImage({} as any);
       setSelectedBrand([]);
       setBrandLabel("Select Brand");
+      if (user && user.id) {
+        dispatch(fetchProductsListRequest({user_id: user.id}))
+      }
       goBack();
     }
   }, [addProductData]);

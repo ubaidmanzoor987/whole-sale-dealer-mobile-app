@@ -5,7 +5,7 @@ import { IUser } from '@app/store/user/login/types';
 
 
 const instance = axios.create({
-    baseURL: ENV_VAR.baseUrl,
+    baseURL: ENV_VAR.baseUrl + "api/",
   });
 
   instance.interceptors.request.use(async function (config) {

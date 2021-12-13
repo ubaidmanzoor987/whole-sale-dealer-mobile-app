@@ -6,26 +6,25 @@ import {
   FlatList,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  ActivityIndicator,
-  Alert,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Snackbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
 import {
-  getDataSelector as listBrandSelector,
   getPendingSelector,
+  getProductSelector,
   getErrorSelector,
-} from '@app/store/brands/listBrands/selector';
-import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+} from '@app/store/products/listProducts/selector';
+import { IProducts } from '@app/store/products/listProducts/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import ProductBottomSheet from './editViewproductBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { deleteBrand } from '@app/utils/apis';
-import { IProducts } from '@app/store/products/addProduct/types';
+import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
+import { ENV_VAR } from '@app/utils/environments';
 
 interface Props {
   rows?: any;
@@ -34,8 +33,7 @@ interface Props {
 }
 
 interface renderProps {
-  // product?: IProducts;
-  product?: any;
+  product?: IProducts;
   index?: any;
   type?: any;
 }
@@ -44,8 +42,12 @@ function ProductScreen() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const brands = useSelector(listBrandSelector);
-  const isPending = useSelector(getPendingSelector);
+
+  // Products Store Data
+  const productsPending = useSelector(getPendingSelector);
+  const productsData = useSelector(getProductSelector);
+  const productsError = useSelector(getErrorSelector);
+
   const [selectedColumn, setSelectedColumn] = useState('');
   const productsBottomSheetRef = useRef() as any;
   const [row, setRow] = useState<any>({});
@@ -56,68 +58,76 @@ function ProductScreen() {
   const user = useSelector(getUserSelector);
   const onDismissSnackBar = () => setVisible(false);
 
+  useEffect(() => {
+    if (user && user.id) {
+      dispatch(fetchProductsListRequest({ user_id: user.id }));
+    }
+  }, [user]);
+
+
   const products = [
     {
-      product_id  : 1,
-      product_name : 'product_name',
-      image1 : 'image1',
-      image2 : 'image2',
-      image3 : 'image3',
-      price : 'price',
-      quantities : 'quantities',
-      product_des : 'product_des',
-      brand_id : 'brand_id',
-      user_id : 'user_id',
+      product_id: 1,
+      product_name: 'product_name',
+      image1: 'image1',
+      image2: 'image2',
+      image3: 'image3',
+      price: 'price',
+      quantities: 'quantities',
+      product_des: 'product_des',
+      brand_id: 'brand_id',
+      user_id: 'user_id',
     },
     {
-      product_id  : 2,
-      product_name : 'product_name',
-      image1 : 'image1',
-      image2 : 'image2',
-      image3 : 'image3',
-      price : 'price',
-      quantities : 'quantities',
-      product_des : 'product_des',
-      brand_id : 'brand_id',
-      user_id : 'user_id',
+      product_id: 2,
+      product_name: 'product_name',
+      image1: 'image1',
+      image2: 'image2',
+      image3: 'image3',
+      price: 'price',
+      quantities: 'quantities',
+      product_des: 'product_des',
+      brand_id: 'brand_id',
+      user_id: 'user_id',
     },
     {
-      product_id  : 'product_id3',
-      product_name : 'product_name',
-      image1 : 'image1',
-      image2 : 'image2',
-      image3 : 'image3',
-      price : 'price',
-      quantities : 'quantities',
-      product_des : 'product_des',
-      brand_id : 'brand_id',
-      user_id : 'user_id',
+      product_id: 'product_id3',
+      product_name: 'product_name',
+      image1: 'image1',
+      image2: 'image2',
+      image3: 'image3',
+      price: 'price',
+      quantities: 'quantities',
+      product_des: 'product_des',
+      brand_id: 'brand_id',
+      user_id: 'user_id',
     },
     {
-      product_id  : 'product_id4',
-      product_name : 'product_name',
-      image1 : 'image1',
-      image2 : 'image2',
-      image3 : 'image3',
-      price : 'price',
-      quantities : 'quantities',
-      product_des : 'product_des',
-      brand_id : 'brand_id',
-      user_id : 'user_id',
+      product_id: 'product_id4',
+      product_name: 'product_name',
+      image1: 'image1',
+      image2: 'image2',
+      image3: 'image3',
+      price: 'price',
+      quantities: 'quantities',
+      product_des: 'product_des',
+      brand_id: 'brand_id',
+      user_id: 'user_id',
     },
     {
-      product_id  : 'product_id5',
-      product_name : 'product_name',
-      image1 : 'image1',
-      image2 : 'image2',
-      image3 : 'image3',
-      price : 'price',
-      quantities : 'quantities',
-      product_des : 'product_des',
-      brand_id : 'brand_id',
-      user_id : 'user_id',
+      product_id: 'product_id5',
+      product_name: 'product_name',
+      image1: 'image1',
+      image2: 'image2',
+      image3: 'image3',
+      price: 'price',
+      quantities: 'quantities',
+      product_des: 'product_des',
+      brand_id: 'brand_id',
+      user_id: 'user_id',
     },
   ];
+
   const cols = [
     {
       name: 'Image',
@@ -146,24 +156,12 @@ function ProductScreen() {
     },
   ];
 
-  const sortColumn = (col) => {
-    const newDirection = direction === 'desc' ? 'asc' : 'desc';
-    const sortedData = _.orderBy(brands, [col], [newDirection]);
-    setDirection(newDirection);
-    // setStocks(sortedData);
-    setSelectedColumn(col);
-  };
-
   const tableHeader = () => (
     <View style={styles.tableHeader}>
       {cols.map((column, index) => {
         {
           return (
-            <TouchableOpacity
-              key={index}
-              style={styles.columnHeader}
-              onPress={() => sortColumn(column.col_name)}
-            >
+            <TouchableOpacity key={index} style={styles.columnHeader}>
               <Text style={styles.columnHeaderTxt}>
                 {column.name + ' '}
                 {selectedColumn === column.col_name && (
@@ -197,42 +195,8 @@ function ProductScreen() {
     productsBottomSheetRef.current.close();
   };
 
-  const handleDelete = (itemData: renderProps) => {
-    Alert.alert('Warning', 'Are you sure You want to delete!', [
-      {
-        text: 'Cancel',
-        onPress: () => {},
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        onPress: async () => {
-          const req = {
-            brand_id: itemData.product.id,
-            user_id: user?.id,
-          };
-          const res = await deleteBrand(req);
-          if (res.message) {
-            dispatch(fetchBrandListRequest({ user_id: user && user.id }));
-            setVisible(true);
-            setMessage(res.message);
-          } else if (res.error) {
-            setVisible(true);
-            setMessage(res.message);
-            setIsError(true);
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleEditClick = (itemData: renderProps) => {
-    setRow(itemData.product);
-    setIsEdit(true);
-    productsBottomSheetRef.current.open();
-  };
-
-  const RenderedItemsData = (itemData: renderProps) => {
+  const RenderedItemsData = ({ product }: renderProps) => {
+    console.log("baseUrlImages + product?.image1,", ENV_VAR.baseUrl + product?.image1,)
     return (
       <TouchableWithoutFeedback>
         <View
@@ -246,19 +210,29 @@ function ProductScreen() {
               width: '15%',
             }}
           >
-            <Image
-              style={{
-                width: 50,
-                height: 50,
-              }}
-              source={{
-                uri: 'https://media.istockphoto.com/photos/cardboard-box-isolated-on-white-background-with-clipping-path-picture-id1282219840?b=1&k=20&m=1282219840&s=170667a&w=0&h=FAo7lLqh8cmjPzAmXMjnsVx-fZxBn1iEmchcAH_jQTw=',
-              }}
-            />
+            {product?.image1 !== '' ? (
+              <Image
+                style={{
+                  width: 50,
+                  height: 50,
+                }}
+                source={{
+                  uri: ENV_VAR.baseUrl + product?.image1,
+                }}
+              />
+            ) : (
+              <Image
+                style={{
+                  width: 50,
+                  height: 50,
+                }}
+                source={require('@app/assets/images/sampleImage.png')}
+              />
+            )}
           </View>
-          <Text style={styles.columnRowTxt}> sadasdas</Text>
-          <Text style={styles.columnRowTxt}> 7</Text>
-          <Text style={styles.columnRowTxt}> 5000</Text>
+          <Text style={styles.columnRowTxt}>{product?.product_name}</Text>
+          <Text style={styles.columnRowTxt}> {product?.quantities}</Text>
+          <Text style={styles.columnRowTxt}> {product?.price}</Text>
           <View
             style={{
               display: 'flex',
@@ -266,7 +240,7 @@ function ProductScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               borderWidth: 1,
-              padding: 5
+              padding: 5,
             }}
           >
             <TouchableOpacity onPress={openViewEditBrandSheet}>
@@ -304,14 +278,14 @@ function ProductScreen() {
       </TouchableOpacity>
 
       <FlatList
-        data={products}
+        data={productsData}
         style={styles.flatListContainer}
         keyExtractor={(item, index) => index + ''}
         ListHeaderComponent={tableHeader}
         stickyHeaderIndices={[0]}
-        // ListFooterComponent={
-        //   isPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
-        // }
+        ListFooterComponent={
+          productsPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
+        }
         ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
         renderItem={({ item, index }) => (
           <RenderedItemsData product={item} index={index} />
@@ -390,7 +364,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     borderBottomWidth: 1,
-    borderBottomColor: 'lightgrey'
+    borderBottomColor: 'lightgrey',
   },
   columnHeader: {
     width: '20%',
