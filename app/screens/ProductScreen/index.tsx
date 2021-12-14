@@ -21,10 +21,11 @@ import {
 import { IProducts } from '@app/store/products/listProducts/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import ProductBottomSheet from './editViewproductBottomSheet';
+import ProductBottomSheet from './customer/editViewproductBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
 import { ENV_VAR } from '@app/utils/environments';
+import { IAddProductState } from './AddEditProductScreen';
 
 interface Props {
   rows?: any;
@@ -185,10 +186,9 @@ function ProductScreen() {
     navigation.navigate('AddProductScreen');
   };
 
-  const openViewEditBrandSheet = () => {
-    setRow({});
-    setIsEdit(false);
-    productsBottomSheetRef.current.open();
+  const openViewEditBrandSheet = (row: any) => {
+    // productsBottomSheetRef.current.open();
+    navigation.navigate("AddEditProductScreen", {isEdit: true, row })
   };
 
   const handleClose = (row: any) => {
@@ -196,7 +196,6 @@ function ProductScreen() {
   };
 
   const RenderedItemsData = ({ product }: renderProps) => {
-    console.log("baseUrlImages + product?.image1,", ENV_VAR.baseUrl + product?.image1,)
     return (
       <TouchableWithoutFeedback>
         <View
@@ -243,8 +242,8 @@ function ProductScreen() {
               padding: 5,
             }}
           >
-            <TouchableOpacity onPress={openViewEditBrandSheet}>
-              <Text>View Details</Text>
+            <TouchableOpacity onPress={()=>openViewEditBrandSheet(product)}>
+              <Text>View | Edit</Text>
             </TouchableOpacity>
           </View>
         </View>

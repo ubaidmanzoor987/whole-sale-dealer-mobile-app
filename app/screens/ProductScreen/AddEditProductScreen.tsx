@@ -13,6 +13,7 @@ import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import Constants from 'expo-constants';
 import { Button as MaterialButton, Snackbar } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { StackScreenProps } from '@react-navigation/stack';
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
@@ -30,8 +31,12 @@ import {
   getPendingSelector,
 } from '@app/store/products/addProduct/selector';
 import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
+import { ProductStacksList } from 'navigation/NavigationTypes';
+import { ENV_VAR } from '@app/utils/environments';
+import { updateProduct } from '@app/utils/apis';
 
-interface IAddProduct {
+export interface IAddProductState {
+  product_id?: number;
   image1?: ImageResult;
   image2?: ImageResult;
   image3?: ImageResult;
@@ -74,9 +79,12 @@ const icons = {
     size: 18,
   },
 };
-export default function AddProductScreen() {
+
+export default function AddProductScreen({
+  navigation,
+  route,
+}: StackScreenProps<ProductStacksList>) {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
@@ -86,9 +94,11 @@ export default function AddProductScreen() {
   const [selectedImage, setSelectedImage] = React.useState<string>('image1');
   const [selectedBrand, setSelectedBrand] = React.useState<any>([]);
   const [brandLabel, setBrandLabel] = React.useState<string>('Select Brand');
+  const [heading, setHeading] = React.useState<string>('Add Product');
   const [openCameraModal, setOpenCameraModal] = React.useState<boolean>(false);
+  const [isEdit, setIsEdit] = React.useState<boolean>(false);
   const [previewImage, setPreviewImage] = React.useState<ImageResult>();
-  const [form, setForm] = useState<IAddProduct>(() => ({
+  const [form, setForm] = useState<IAddProductState>(() => ({
     image1: {
       uri: '',
       height: -1,
@@ -118,10 +128,11 @@ export default function AddProductScreen() {
   const addProductData = useSelector(getaddProductelector);
   const addProductPending = useSelector(getPendingSelector);
   const addProductError = useSelector(getErrorSelector);
+  const [updatePending, setUpdatePending] = useState<boolean>(false);
 
   useEffect(() => {
     if (addProductData && addProductData.product_name) {
-      setMessage('product successfully inserted');
+      setMessage('Product successfully inserted');
       dispatch(fetchProductsAddClear());
       setForm(() => ({
         image1: {
@@ -152,15 +163,63 @@ export default function AddProductScreen() {
       }));
       setPreviewImage({} as any);
       setSelectedBrand([]);
-      setBrandLabel("Select Brand");
+      setBrandLabel('Select Brand');
       if (user && user.id) {
-        dispatch(fetchProductsListRequest({user_id: user.id}))
+        dispatch(fetchProductsListRequest({ user_id: user.id }));
       }
       goBack();
     }
   }, [addProductData]);
 
-  const [isPending, setIsPending] = useState(false);
+  useEffect(() => {
+    if (addProductError && addProductError.length > 0) {
+      setMessage(addProductError);
+      dispatch(fetchProductsAddClear());
+    }
+  }, [addProductError]);
+
+  useEffect(() => {
+    const { isEdit, row } = route.params as any;
+    if (isEdit === true && user && user.id && row?.product_id) {
+      setForm(() => ({
+        ...form,
+        brand_id: row.brand_id,
+        image1: {
+          uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
+          height: -1,
+          width: -1,
+          base64: row.image1b64
+        },
+        image2: {
+          uri: row.image2 !== '' ? ENV_VAR.baseUrl + row.image2 : '',
+          height: -1,
+          width: -1,
+          base64: row.image2b64,
+        },
+        image3: {
+          uri: row.image3 !== '' ? ENV_VAR.baseUrl + row.image3 : '',
+          height: -1,
+          width: -1,
+          base64: row.image3b64,
+        },
+        product_name: row.product_name?.toString(),
+        product_description: row.product_des?.toString(),
+        product_id: row.product_id?.toString(),
+        quantity: row.quantities?.toString(),
+        price: row.price?.toString(),
+        user_id: row.user_id?.toString(),
+      }));
+      setBrandLabel(row.brand_name);
+      setHeading('Edit | View Product');
+      setPreviewImage({
+        uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
+        height: -1,
+        width: -1,
+      });
+      setIsEdit(true);
+      setSelectedBrand([{ id: row.brand_id, name: row.brand_name }]);
+    }
+  }, [route.params]);
 
   useEffect(() => {
     if (previewImage && previewImage.uri) {
@@ -283,6 +342,7 @@ export default function AddProductScreen() {
       brand_id: selectedBrand[0].id,
       user_id: user && user.id,
     };
+    console.log('imag', form.image1);
     if (form.image1 && form.image1.base64 !== '') {
       data['image1'] = `data:image/jpeg;base64,${form.image1.base64},`;
     }
@@ -292,7 +352,22 @@ export default function AddProductScreen() {
     if (form.image3 && form.image3.base64 !== '') {
       data['image3'] = `data:image/jpeg;base64,${form.image3.base64},`;
     }
-    dispatch(fetchProductsAddRequest(data));
+    if (isEdit === true) {
+      setUpdatePending(true);
+      data['product_id'] = form.product_id;
+      const res = await updateProduct(data);
+      console.log('res', res);
+      if (res.message) {
+        dispatch(fetchProductsListRequest({ user_id: user && user.id }));
+        setUpdatePending(false);
+        setMessage(res.message);
+      } else if (res.error) {
+        setMessage(res.error);
+        setUpdatePending(false);
+      }
+    } else {
+      dispatch(fetchProductsAddRequest(data));
+    }
     setVisible(true);
   };
 
@@ -316,7 +391,7 @@ export default function AddProductScreen() {
               }}
             />
           </TouchableOpacity>
-          <Text style={styles.titleWelcomeText}>Add Product</Text>
+          <Text style={styles.titleWelcomeText}>{heading}</Text>
         </View>
         <Text style={styles.titleSignText}>
           Fill all required information *
@@ -345,7 +420,7 @@ export default function AddProductScreen() {
             }}
             onPress={showCameraModal}
           >
-            {previewImage && previewImage.base64 ? (
+            {previewImage && previewImage.uri ? (
               <Image
                 style={{
                   width: '100%',
@@ -516,7 +591,7 @@ export default function AddProductScreen() {
           </View>
           <View style={{ ...styles.inputFieldsMainView, marginBottom: 70 }}>
             <View style={styles.UpdateProfileButtonView}>
-              {addProductPending ? (
+              {addProductPending || updatePending ? (
                 <ActivityIndicator
                   size="large"
                   color="#5460E0"
@@ -529,7 +604,7 @@ export default function AddProductScreen() {
                   onPress={handleSubmit}
                 >
                   <Text style={styles.UpdateProfileButtonText}>
-                    Add Product
+                    {isEdit === true ? 'Update Product' : 'Add Product'}
                   </Text>
                 </MaterialButton>
               )}

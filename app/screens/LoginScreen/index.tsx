@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { TextInput, Button } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -51,17 +51,6 @@ function LoginScreen({
       try {
         const jsonValue = (await AsyncStorage.getItem('user')) ?? '';
         const result = JSON.parse(jsonValue);
-        // if (result.type === 'success') {
-        //   const data = {
-        //     email: result.user.email,
-        //     displayName: result.user.givenName + ' ' + result.user.familyName,
-        //     givenName: result.user.givenName,
-        //     familyName: result.user.familyName,
-        //     googleId: result.user.id,
-        //     imageUrl: result.user.photoUrl,
-        //   } as requestUser;
-        //   dispatch(fetchUserRequest(data));
-        // }
       } catch (e) {
         // error reading value
       }

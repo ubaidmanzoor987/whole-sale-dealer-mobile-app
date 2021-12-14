@@ -107,9 +107,9 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
       delete data['error'];
       dispatch(fetchBrandCreateRequest(data));
     } else {
+      setUpdatePending(true);
       data['user_id'] = user && user.id;
       const res = await updateBrand(data);
-      setUpdatePending(true);
       if (res.message) {
         dispatch(fetchBrandListRequest({user_id: user && user.id}))
         setUpdatePending(false);
