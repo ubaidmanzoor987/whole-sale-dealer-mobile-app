@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/core';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import Constants from 'expo-constants';
 import { Button as MaterialButton, Snackbar } from 'react-native-paper';
@@ -33,7 +33,7 @@ import {
 import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
 import { ProductStacksList } from 'navigation/NavigationTypes';
 import { ENV_VAR } from '@app/utils/environments';
-import { updateProduct } from '@app/utils/apis';
+import { deleteProdouct, updateProduct } from '@app/utils/apis';
 
 export interface IAddProductState {
   product_id?: number;
@@ -95,6 +95,9 @@ export default function AddProductScreen({
   const [selectedBrand, setSelectedBrand] = React.useState<any>([]);
   const [brandLabel, setBrandLabel] = React.useState<string>('Select Brand');
   const [heading, setHeading] = React.useState<string>('Add Product');
+  const [isImage1Update, setIsImage1Update] = React.useState<boolean>(false);
+  const [isImage2Update, setIsImage2Update] = React.useState<boolean>(false);
+  const [isImage3Update, setIsImage3Update] = React.useState<boolean>(false);
   const [openCameraModal, setOpenCameraModal] = React.useState<boolean>(false);
   const [isEdit, setIsEdit] = React.useState<boolean>(false);
   const [previewImage, setPreviewImage] = React.useState<ImageResult>();
@@ -184,12 +187,6 @@ export default function AddProductScreen({
       setForm(() => ({
         ...form,
         brand_id: row.brand_id,
-        image1: {
-          uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
-          height: -1,
-          width: -1,
-          base64: row.image1b64
-        },
         image2: {
           uri: row.image2 !== '' ? ENV_VAR.baseUrl + row.image2 : '',
           height: -1,
@@ -201,6 +198,12 @@ export default function AddProductScreen({
           height: -1,
           width: -1,
           base64: row.image3b64,
+        },
+        image1: {
+          uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
+          height: -1,
+          width: -1,
+          base64: row.image1b64,
         },
         product_name: row.product_name?.toString(),
         product_description: row.product_des?.toString(),
@@ -215,15 +218,39 @@ export default function AddProductScreen({
         uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
         height: -1,
         width: -1,
+        base64: row.image1b64,
       });
       setIsEdit(true);
       setSelectedBrand([{ id: row.brand_id, name: row.brand_name }]);
     }
   }, [route.params]);
 
+  const setIsUpdatedImage = () => {
+    if (isEdit === true) {
+      switch (selectedImage) {
+        case 'image1':
+          setIsImage1Update(true);
+          break;
+        case 'image2':
+          setIsImage2Update(true);
+          break;
+        case 'image3':
+          setIsImage3Update(true);
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
   useEffect(() => {
-    if (previewImage && previewImage.uri) {
+    if (
+      previewImage &&
+      previewImage.uri &&
+      previewImage.uri !== form[selectedImage]['uri']
+    ) {
       setForm(() => ({ ...form, [selectedImage]: previewImage }));
+      setIsUpdatedImage();
     }
   }, [previewImage]);
 
@@ -259,7 +286,7 @@ export default function AddProductScreen({
   };
 
   const renderSelectText = (text: string) => {
-    return <Text style={{}}>{text}</Text>;
+    return <Text>{text}</Text>;
   };
 
   const onSelectedItemObjectsChange = (col: any) => {
@@ -342,21 +369,24 @@ export default function AddProductScreen({
       brand_id: selectedBrand[0].id,
       user_id: user && user.id,
     };
-    console.log('imag', form.image1);
     if (form.image1 && form.image1.base64 !== '') {
       data['image1'] = `data:image/jpeg;base64,${form.image1.base64},`;
+      data['isImage1Update'] = isImage1Update;
     }
     if (form.image2 && form.image2.base64 !== '') {
       data['image2'] = `data:image/jpeg;base64,${form.image2.base64},`;
+      data['isImage2Update'] = isImage2Update;
     }
     if (form.image3 && form.image3.base64 !== '') {
       data['image3'] = `data:image/jpeg;base64,${form.image3.base64},`;
+      data['isImage3Update'] = isImage3Update;
     }
+
     if (isEdit === true) {
       setUpdatePending(true);
       data['product_id'] = form.product_id;
+      setVisible(true);
       const res = await updateProduct(data);
-      console.log('res', res);
       if (res.message) {
         dispatch(fetchProductsListRequest({ user_id: user && user.id }));
         setUpdatePending(false);
@@ -375,6 +405,39 @@ export default function AddProductScreen({
     if (name) {
       setForm(() => ({ ...form, [name]: value, error: '' }));
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Warning', 'Are you sure You want to delete!', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          if (form.product_id && user?.id) {
+            const req = {
+              product_id: form.product_id,
+              user_id: user?.id,
+            };
+            const res = await deleteProdouct(req);
+            if (res.message) {
+              dispatch(fetchProductsListRequest({ user_id: user && user.id }));
+              setVisible(true);
+              setMessage(res.message);
+              setForm({} as any);
+              navigation.navigate('ProductScreen');
+            } else if (res.error) {
+              setVisible(true);
+              setMessage(res.message);
+              setIsError(true);
+            }
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -590,7 +653,7 @@ export default function AddProductScreen({
             )}
           </View>
           <View style={{ ...styles.inputFieldsMainView, marginBottom: 70 }}>
-            <View style={styles.UpdateProfileButtonView}>
+            <View style={styles.UpdateProductButtonView}>
               {addProductPending || updatePending ? (
                 <ActivityIndicator
                   size="large"
@@ -599,17 +662,38 @@ export default function AddProductScreen({
                 />
               ) : (
                 <MaterialButton
-                  style={styles.UpdateProfileButton}
+                  style={styles.UpdateProductButton}
                   mode="contained"
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.UpdateProfileButtonText}>
+                  <Text style={styles.UpdateProductButtonText}>
                     {isEdit === true ? 'Update Product' : 'Add Product'}
                   </Text>
                 </MaterialButton>
               )}
             </View>
           </View>
+          {isEdit === true && (
+            <View
+              style={{
+                ...styles.inputFieldsMainView,
+                marginTop: '-10%',
+                marginBottom: '17%',
+              }}
+            >
+              <View style={styles.UpdateProductButtonView}>
+                <MaterialButton
+                  style={styles.DeleteProductButton}
+                  mode="contained"
+                  onPress={handleDelete}
+                >
+                  <Text style={styles.UpdateProductButtonText}>
+                    Delete Product
+                  </Text>
+                </MaterialButton>
+              </View>
+            </View>
+          )}
         </View>
       </KeyboardAwareScrollView>
       <Snackbar
@@ -719,20 +803,26 @@ const styles = StyleSheet.create({
     color: 'grey',
     fontSize: 15,
   },
-  UpdateProfileButtonView: {
+  UpdateProductButtonView: {
     backgroundColor: 'transparent',
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: '2%',
   },
-  UpdateProfileButton: {
+  DeleteProductButton: {
+    width: '85%',
+    padding: '1.8%',
+    borderRadius: 20,
+    backgroundColor: 'red',
+  },
+  UpdateProductButton: {
     width: '85%',
     padding: '1.8%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
   },
-  UpdateProfileButtonText: {
+  UpdateProductButtonText: {
     fontSize: 13,
     color: 'white',
   },

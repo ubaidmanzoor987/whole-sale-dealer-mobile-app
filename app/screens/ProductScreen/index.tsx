@@ -183,7 +183,7 @@ function ProductScreen() {
   );
 
   const navigateToAddProducts = () => {
-    navigation.navigate('AddProductScreen');
+    navigation.navigate('AddEditProductScreen', {isEdit: true, row: null});
   };
 
   const openViewEditBrandSheet = (row: any) => {

@@ -43,3 +43,14 @@ export const updateProduct = async (body) => {
     };
   }
 };
+
+export const deleteProdouct = async (body) => {
+  try {
+    const response = await axios.post('product/delete', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+};
