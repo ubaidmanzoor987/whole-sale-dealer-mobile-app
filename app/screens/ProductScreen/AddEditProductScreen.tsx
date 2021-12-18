@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/core';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import Constants from 'expo-constants';
 import { Button as MaterialButton, Snackbar } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { StackScreenProps } from '@react-navigation/stack';
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
@@ -29,8 +30,13 @@ import {
   getErrorSelector,
   getPendingSelector,
 } from '@app/store/products/addProduct/selector';
+import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
+import { ProductStacksList } from 'navigation/NavigationTypes';
+import { ENV_VAR } from '@app/utils/environments';
+import { deleteProdouct, updateProduct } from '@app/utils/apis';
 
-interface IAddProduct {
+export interface IAddProductState {
+  product_id?: number;
   image1?: ImageResult;
   image2?: ImageResult;
   image3?: ImageResult;
@@ -73,9 +79,12 @@ const icons = {
     size: 18,
   },
 };
-export default function AddProductScreen() {
+
+export default function AddProductScreen({
+  navigation,
+  route,
+}: StackScreenProps<ProductStacksList>) {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
@@ -85,9 +94,14 @@ export default function AddProductScreen() {
   const [selectedImage, setSelectedImage] = React.useState<string>('image1');
   const [selectedBrand, setSelectedBrand] = React.useState<any>([]);
   const [brandLabel, setBrandLabel] = React.useState<string>('Select Brand');
+  const [heading, setHeading] = React.useState<string>('Add Product');
+  const [isImage1Update, setIsImage1Update] = React.useState<boolean>(false);
+  const [isImage2Update, setIsImage2Update] = React.useState<boolean>(false);
+  const [isImage3Update, setIsImage3Update] = React.useState<boolean>(false);
   const [openCameraModal, setOpenCameraModal] = React.useState<boolean>(false);
+  const [isEdit, setIsEdit] = React.useState<boolean>(false);
   const [previewImage, setPreviewImage] = React.useState<ImageResult>();
-  const [form, setForm] = useState<IAddProduct>(() => ({
+  const [form, setForm] = useState<IAddProductState>(() => ({
     image1: {
       uri: '',
       height: -1,
@@ -117,10 +131,11 @@ export default function AddProductScreen() {
   const addProductData = useSelector(getaddProductelector);
   const addProductPending = useSelector(getPendingSelector);
   const addProductError = useSelector(getErrorSelector);
+  const [updatePending, setUpdatePending] = useState<boolean>(false);
 
   useEffect(() => {
     if (addProductData && addProductData.product_name) {
-      setMessage('product successfully inserted');
+      setMessage('Product successfully inserted');
       dispatch(fetchProductsAddClear());
       setForm(() => ({
         image1: {
@@ -151,16 +166,91 @@ export default function AddProductScreen() {
       }));
       setPreviewImage({} as any);
       setSelectedBrand([]);
-      setBrandLabel("Select Brand");
+      setBrandLabel('Select Brand');
+      if (user && user.id) {
+        dispatch(fetchProductsListRequest({ user_id: user.id }));
+      }
       goBack();
     }
   }, [addProductData]);
 
-  const [isPending, setIsPending] = useState(false);
+  useEffect(() => {
+    if (addProductError && addProductError.length > 0) {
+      setMessage(addProductError);
+      dispatch(fetchProductsAddClear());
+    }
+  }, [addProductError]);
 
   useEffect(() => {
-    if (previewImage && previewImage.uri) {
+    const { isEdit, row } = route.params as any;
+    if (isEdit === true && user && user.id && row?.product_id) {
+      setForm(() => ({
+        ...form,
+        brand_id: row.brand_id,
+        image2: {
+          uri: row.image2 !== '' ? ENV_VAR.baseUrl + row.image2 : '',
+          height: -1,
+          width: -1,
+          base64: row.image2b64,
+        },
+        image3: {
+          uri: row.image3 !== '' ? ENV_VAR.baseUrl + row.image3 : '',
+          height: -1,
+          width: -1,
+          base64: row.image3b64,
+        },
+        image1: {
+          uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
+          height: -1,
+          width: -1,
+          base64: row.image1b64,
+        },
+        product_name: row.product_name?.toString(),
+        product_description: row.product_des?.toString(),
+        product_id: row.product_id?.toString(),
+        quantity: row.quantities?.toString(),
+        price: row.price?.toString(),
+        user_id: row.user_id?.toString(),
+      }));
+      setBrandLabel(row.brand_name);
+      setHeading('Edit | View Product');
+      setPreviewImage({
+        uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
+        height: -1,
+        width: -1,
+        base64: row.image1b64,
+      });
+      setIsEdit(true);
+      setSelectedBrand([{ id: row.brand_id, name: row.brand_name }]);
+    }
+  }, [route.params]);
+
+  const setIsUpdatedImage = () => {
+    if (isEdit === true) {
+      switch (selectedImage) {
+        case 'image1':
+          setIsImage1Update(true);
+          break;
+        case 'image2':
+          setIsImage2Update(true);
+          break;
+        case 'image3':
+          setIsImage3Update(true);
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (
+      previewImage &&
+      previewImage.uri &&
+      previewImage.uri !== form[selectedImage]['uri']
+    ) {
       setForm(() => ({ ...form, [selectedImage]: previewImage }));
+      setIsUpdatedImage();
     }
   }, [previewImage]);
 
@@ -196,7 +286,7 @@ export default function AddProductScreen() {
   };
 
   const renderSelectText = (text: string) => {
-    return <Text style={{}}>{text}</Text>;
+    return <Text>{text}</Text>;
   };
 
   const onSelectedItemObjectsChange = (col: any) => {
@@ -281,14 +371,33 @@ export default function AddProductScreen() {
     };
     if (form.image1 && form.image1.base64 !== '') {
       data['image1'] = `data:image/jpeg;base64,${form.image1.base64},`;
+      data['isImage1Update'] = isImage1Update;
     }
     if (form.image2 && form.image2.base64 !== '') {
       data['image2'] = `data:image/jpeg;base64,${form.image2.base64},`;
+      data['isImage2Update'] = isImage2Update;
     }
     if (form.image3 && form.image3.base64 !== '') {
       data['image3'] = `data:image/jpeg;base64,${form.image3.base64},`;
+      data['isImage3Update'] = isImage3Update;
     }
-    dispatch(fetchProductsAddRequest(data));
+
+    if (isEdit === true) {
+      setUpdatePending(true);
+      data['product_id'] = form.product_id;
+      setVisible(true);
+      const res = await updateProduct(data);
+      if (res.message) {
+        dispatch(fetchProductsListRequest({ user_id: user && user.id }));
+        setUpdatePending(false);
+        setMessage(res.message);
+      } else if (res.error) {
+        setMessage(res.error);
+        setUpdatePending(false);
+      }
+    } else {
+      dispatch(fetchProductsAddRequest(data));
+    }
     setVisible(true);
   };
 
@@ -296,6 +405,39 @@ export default function AddProductScreen() {
     if (name) {
       setForm(() => ({ ...form, [name]: value, error: '' }));
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Warning', 'Are you sure You want to delete!', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          if (form.product_id && user?.id) {
+            const req = {
+              product_id: form.product_id,
+              user_id: user?.id,
+            };
+            const res = await deleteProdouct(req);
+            if (res.message) {
+              dispatch(fetchProductsListRequest({ user_id: user && user.id }));
+              setVisible(true);
+              setMessage(res.message);
+              setForm({} as any);
+              navigation.navigate('ProductScreen');
+            } else if (res.error) {
+              setVisible(true);
+              setMessage(res.message);
+              setIsError(true);
+            }
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -312,7 +454,7 @@ export default function AddProductScreen() {
               }}
             />
           </TouchableOpacity>
-          <Text style={styles.titleWelcomeText}>Add Product</Text>
+          <Text style={styles.titleWelcomeText}>{heading}</Text>
         </View>
         <Text style={styles.titleSignText}>
           Fill all required information *
@@ -341,7 +483,7 @@ export default function AddProductScreen() {
             }}
             onPress={showCameraModal}
           >
-            {previewImage && previewImage.base64 ? (
+            {previewImage && previewImage.uri ? (
               <Image
                 style={{
                   width: '100%',
@@ -511,8 +653,8 @@ export default function AddProductScreen() {
             )}
           </View>
           <View style={{ ...styles.inputFieldsMainView, marginBottom: 70 }}>
-            <View style={styles.UpdateProfileButtonView}>
-              {addProductPending ? (
+            <View style={styles.UpdateProductButtonView}>
+              {addProductPending || updatePending ? (
                 <ActivityIndicator
                   size="large"
                   color="#5460E0"
@@ -520,17 +662,38 @@ export default function AddProductScreen() {
                 />
               ) : (
                 <MaterialButton
-                  style={styles.UpdateProfileButton}
+                  style={styles.UpdateProductButton}
                   mode="contained"
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.UpdateProfileButtonText}>
-                    Add Product
+                  <Text style={styles.UpdateProductButtonText}>
+                    {isEdit === true ? 'Update Product' : 'Add Product'}
                   </Text>
                 </MaterialButton>
               )}
             </View>
           </View>
+          {isEdit === true && (
+            <View
+              style={{
+                ...styles.inputFieldsMainView,
+                marginTop: '-10%',
+                marginBottom: '17%',
+              }}
+            >
+              <View style={styles.UpdateProductButtonView}>
+                <MaterialButton
+                  style={styles.DeleteProductButton}
+                  mode="contained"
+                  onPress={handleDelete}
+                >
+                  <Text style={styles.UpdateProductButtonText}>
+                    Delete Product
+                  </Text>
+                </MaterialButton>
+              </View>
+            </View>
+          )}
         </View>
       </KeyboardAwareScrollView>
       <Snackbar
@@ -640,20 +803,26 @@ const styles = StyleSheet.create({
     color: 'grey',
     fontSize: 15,
   },
-  UpdateProfileButtonView: {
+  UpdateProductButtonView: {
     backgroundColor: 'transparent',
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: '2%',
   },
-  UpdateProfileButton: {
+  DeleteProductButton: {
+    width: '85%',
+    padding: '1.8%',
+    borderRadius: 20,
+    backgroundColor: 'red',
+  },
+  UpdateProductButton: {
     width: '85%',
     padding: '1.8%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
   },
-  UpdateProfileButtonText: {
+  UpdateProductButtonText: {
     fontSize: 13,
     color: 'white',
   },

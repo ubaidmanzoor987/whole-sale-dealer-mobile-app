@@ -3,13 +3,13 @@ import Constants from 'expo-constants';
 const ENVs = {
   dev: {
     environment: 'development' as 'development' | 'staging' | 'production',
-    baseUrl: 'http://192.168.1.7:5000/api/' as string,
+    baseUrl: 'http://192.168.43.26:5000/api/' as string,
     clientId:
       '984919890336-1e2982lmg8faeha9h63d17t4utlon121.apps.googleusercontent.com' as string,
   },
   staging: {
     environment: 'staging' as 'development' | 'staging' | 'production',
-    baseUrl: 'http://192.168.1.20:5000/api/' as string,
+    baseUrl: 'http://192.168.1.20:5000/' as string,
     clientId:
       '984919890336-1e2982lmg8faeha9h63d17t4utlon121.apps.googleusercontent.com' as string,
   },

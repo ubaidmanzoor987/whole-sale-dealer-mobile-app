@@ -32,3 +32,25 @@ export const updateUser = async (body) => {
     };
   }
 };
+
+export const updateProduct = async (body) => {
+  try {
+    const response = await axios.post('product/update', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+};
+
+export const deleteProdouct = async (body) => {
+  try {
+    const response = await axios.post('product/delete', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+};

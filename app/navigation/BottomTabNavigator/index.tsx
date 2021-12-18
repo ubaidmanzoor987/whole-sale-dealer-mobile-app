@@ -7,7 +7,7 @@ import Colors from '@app/constants/Colors';
 import useColorScheme from '@app/hooks/useColorScheme';
 import BrandScreen from '@app/screens/BrandScreen';
 import ProductScreen from '@app/screens/ProductScreen';
-import AddProductScreen from '@app/screens/ProductScreen/AddProductScreen';
+import AddEditProductScreen from '@app/screens/ProductScreen/AddEditProductScreen';
 import {
   BottomTabParamList,
   ProfileStacksList,
@@ -82,7 +82,7 @@ function ProductNavigator(){
   return (
     <ProductStack.Navigator screenOptions ={{ headerShown: false }}>
       <ProductStack.Screen name="ProductScreen" component={ProductScreen} />
-      <ProductStack.Screen name="AddProductScreen" component={AddProductScreen} />
+      <ProductStack.Screen name="AddEditProductScreen" component={AddEditProductScreen} />
     </ProductStack.Navigator>
   )
 }

@@ -27,7 +27,7 @@ export type BrandStacksList = {
 
 export type ProductStacksList = {
   ProductScreen: undefined;
-  AddProductScreen: undefined;
+  AddEditProductScreen: undefined;
 };
 
 export type HomeStacksList = {
