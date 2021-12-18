@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -10,16 +10,19 @@ import {
   Image,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { Button as MaterialButton, Avatar, Snackbar } from 'react-native-paper';
+import { Button as MaterialButton, Snackbar } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text, View } from '@app/screens/Themed';
 import { getDataSelector } from '@app/store/user/login/selector';
 import { IUser } from '@app/store/user/login/types';
-import { updateUser } from '@app/utils/apis';
+import { logoutUser, updateUser } from '@app/utils/apis';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { fetchUserLoginClear } from '@app/store/user/login/actions';
 
 export interface option {
   title: string;
@@ -35,12 +38,13 @@ export interface option {
 }
 
 export default function ProfileScreen() {
-  const [brands, setBrands] = useState([]);
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const onDismissSnackBar = () => setVisible(false);
   const user = useSelector(getDataSelector);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [selectedImage, setSelectedImage] = React.useState<String>('');
   const [profileImgUrl, setProfileImgUrl] = React.useState<String | undefined>(
     ''
@@ -58,7 +62,7 @@ export default function ProfileScreen() {
     address: '',
     image: '',
     email: '',
-    id: 0,
+    id: -1,
     token: '',
   }));
 
@@ -73,6 +77,7 @@ export default function ProfileScreen() {
 
   const handleSubmit = async () => {
     const res = await updateUser(form);
+    console.log("res", res);
     if (res.message) {
       setVisible(true);
       setMessage(res.message);
@@ -166,6 +171,23 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    if (user && user.id) {
+      const res = await logoutUser({ user_id: user.id });
+      if (res.message) {
+        AsyncStorage.removeItem("user");
+        dispatch(fetchUserLoginClear());
+        setVisible(true);
+        setMessage(res.message);
+        navigation.navigate("Root");
+      } else if (res.error) {
+        setVisible(true);
+        setMessage(res.message);
+        setIsError(true);
+      }
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
@@ -186,6 +208,7 @@ export default function ProfileScreen() {
               marginTop: '1%',
               marginRight: '5%',
             }}
+            onPress={handleLogout}
           >
             <MaterialCommunityIcons name="logout" size={45} color="black" />
             <Text style={{ color: 'black' }}>Logout</Text>
@@ -292,7 +315,7 @@ export default function ProfileScreen() {
                     setForm(() => ({ ...form, owner_phone_no: e }));
                   }}
                   placeholder="Enter Owner Phone No"
-                  value={form.shop_phone_no1}
+                  value={form.owner_phone_no}
                   defaultValue={form.owner_phone_no}
                   style={{ marginLeft: '11%' }}
                   maxLength={15}
