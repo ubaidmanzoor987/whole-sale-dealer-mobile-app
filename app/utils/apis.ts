@@ -33,6 +33,17 @@ export const updateUser = async (body) => {
   }
 };
 
+export const logoutUser = async(body) => {
+  try {
+    const response = await axios.post('user/logout', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+}
+
 export const updateProduct = async (body) => {
   try {
     const response = await axios.post('product/update', body);

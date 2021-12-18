@@ -25,6 +25,7 @@ function RootScreen({
   useEffect(()=>{
     const autoLogin = async ()=>{
       let user = await AsyncStorgage.getItem('user') || '' as any;
+      console.log("user", user);
       if(user !== ''){
         user = JSON.parse(user);
         dispatch(userAutoLogin(user))
