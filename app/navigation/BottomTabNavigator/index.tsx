@@ -12,9 +12,11 @@ import {
   BottomTabParamList,
   ProfileStacksList,
   ProductStacksList,
-  BrandStacksList
+  BrandStacksList,
+  CustomerStacksList
 } from '../NavigationTypes';
 import ProfileScreen from '@app/screens/ProfileScreen';
+import CustomerScreen from '@app/screens/CustomerScreen';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -41,12 +43,20 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
+        name="Customer"
+        component={CustomerNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="person-circle" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
         name="Profile"
         component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
+
     </BottomTab.Navigator>
   );
 }
@@ -61,6 +71,7 @@ function TabBarIcon(props: {
 const BrandStack = createStackNavigator<BrandStacksList>();
 const ProductStack = createStackNavigator<ProductStacksList>();
 const ProfileStack = createStackNavigator<ProfileStacksList>();
+const CustomerStack = createStackNavigator<CustomerStacksList>();
 
 function BrandNavigator() {
   return (
@@ -78,11 +89,19 @@ function ProfileNavigator() {
   );
 }
 
-function ProductNavigator(){
+function ProductNavigator() {
   return (
-    <ProductStack.Navigator screenOptions ={{ headerShown: false }}>
+    <ProductStack.Navigator screenOptions={{ headerShown: false }}>
       <ProductStack.Screen name="ProductScreen" component={ProductScreen} />
       <ProductStack.Screen name="AddEditProductScreen" component={AddEditProductScreen} />
     </ProductStack.Navigator>
   )
+}
+
+function CustomerNavigator() {
+  return (
+    <CustomerStack.Navigator screenOptions={{ headerShown: false }}>
+      <CustomerStack.Screen name="CustomerSceen" component={CustomerScreen} />
+    </CustomerStack.Navigator>
+  );
 }

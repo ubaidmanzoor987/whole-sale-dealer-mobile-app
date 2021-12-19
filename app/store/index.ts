@@ -33,13 +33,13 @@ sagaMiddleware.run(rootSaga);
 //     }
 // }
 // store.dispatch(getAsyncStorage());
-AsyncStorage.getItem('user')
-.then(res=>{
-    if(res){
-        let user = JSON.parse(res) as any;
-        console.log('store disatch', user);
+// AsyncStorage.getItem('user')
+// .then(res=>{
+//     if(res){
+//         let user = JSON.parse(res) as any;
+//         console.log('store disatch', user);
         
-        store.dispatch(userAutoLogin(user))
-    }
-})
+//         store.dispatch(userAutoLogin(user))
+//     }
+// })
 export default store;

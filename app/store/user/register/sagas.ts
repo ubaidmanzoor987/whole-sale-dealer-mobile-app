@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '@app/hooks/useAxios';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 
 import * as actions from './actions';
@@ -13,7 +13,7 @@ import {
 import { ENV_VAR } from '@app/utils/environments';
 
 const userCreate = (body: requestUser) =>
-  axios.post<responseUser>(ENV_VAR.baseUrl + 'user/insert_user', body);
+  axios.post<responseUser>('user/insert_user', body);
 
 function* fetchUserCreateSaga(action: FetchUserRequest): any {
   try {

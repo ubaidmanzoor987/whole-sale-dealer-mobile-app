@@ -18,6 +18,7 @@ export type BottomTabParamList = {
   Products: undefined;
   Brands: undefined;
   Profile: undefined;
+  Customer: undefined;
 };
 
 export type BrandStacksList = {
@@ -37,5 +38,9 @@ export type HomeStacksList = {
 
 export type ProfileStacksList = {
   ProfileScreen: undefined;
+};
+
+export type CustomerStacksList = {
+  CustomerSceen: undefined;
 };
 
