@@ -1,3 +1,4 @@
+import { ImageResult } from 'expo-image-manipulator';
 import * as actionTypes from './actionTypes';
 
 export interface IUser {
@@ -10,10 +11,11 @@ export interface IUser {
   loc_long: string;
   loc_lat: string;
   address: string;
-  image: string;
+  image: ImageResult | string;
   email: string;
   id: number;
   token: string;
+  imageb64: string;
 }
 
 export interface requestUserLogin {
