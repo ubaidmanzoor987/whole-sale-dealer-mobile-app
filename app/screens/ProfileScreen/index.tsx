@@ -20,7 +20,10 @@ import { logoutUser, updateUser } from '@app/utils/apis';
 import CameraScreenSheet from '@app/screens/MediaScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { fetchUserLoginClear } from '@app/store/user/login/actions';
+import {
+  fetchUserLoginClear,
+  userAutoLogin,
+} from '@app/store/user/login/actions';
 import { ImageResult } from 'expo-image-manipulator';
 import { ENV_VAR } from '@app/utils/environments';
 
@@ -100,7 +103,7 @@ export default function ProfileScreen() {
         id: user.id,
         token: user.token,
         imageb64: user.imageb64,
-        } as any;
+      } as any;
       setForm(data);
     }
   }, []);
@@ -117,7 +120,7 @@ export default function ProfileScreen() {
   }, [previewImage]);
 
   const handleSubmit = async () => {
-    const data = {...form};
+    const data = { ...form };
     if (form.image && form.image.base64 !== '') {
       data['imagebase64'] = `data:image/jpeg;base64,${form.image.base64},`;
       // data['isImage1Update'] = isImage1Update;
@@ -128,6 +131,10 @@ export default function ProfileScreen() {
       setVisible(true);
       setMessage(res.message);
       setIsPending(false);
+      AsyncStorage.removeItem('user');
+      AsyncStorage.setItem('user', JSON.stringify(res.data));
+      dispatch(userAutoLogin(res.data));
+      setIsError(false);
     } else if (res.error) {
       setVisible(true);
       setMessage(res.message);
@@ -157,6 +164,9 @@ export default function ProfileScreen() {
     setOpenCameraModal(true);
   };
 
+  console.log("user", form);
+  
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>
@@ -185,8 +195,11 @@ export default function ProfileScreen() {
         </View>
       </View>
       <View style={styles.fieldsView}>
-        <TouchableOpacity onPress={showCameraModal}>
-          {form.image && form.image.uri ? (
+        <TouchableOpacity
+          onPress={showCameraModal}
+          style={{ borderWidth: 1, borderColor: 'grey' }}
+        >
+          {form.image && form.image.uri && form.image.base64 ? (
             <Image
               style={{
                 width: 150,
@@ -226,42 +239,41 @@ export default function ProfileScreen() {
                 defaultValue={form.email}
                 placeholder="Enter Email"
                 style={styles.inputField}
+                editable={false}
               />
             </View>
           </View>
-          <View style={styles.inputFieldsMainView1}>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>User Name*</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  placeholder="Enter User name"
-                  value={form.user_name}
-                  defaultValue={form.user_name}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={15}
-                />
-              </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>User Name*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                placeholder="User Name"
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={50}
+                defaultValue={form.user_name}
+                value={form.user_name}
+                editable={false}
+              />
             </View>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Shop Name*</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={() => console.log()}
-                  placeholder="Enter Shop Name"
-                  value={form.shop_name}
-                  defaultValue={form.shop_name}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={30}
-                />
-              </View>
+          </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Shop Name*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) => setForm(() => ({ ...form, shop_name: e }))}
+                placeholder="Enter Name"
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={50}
+                defaultValue={form.shop_name}
+              />
             </View>
           </View>
 
@@ -280,48 +292,47 @@ export default function ProfileScreen() {
                 keyboardType="email-address"
                 style={{ width: '80%', marginLeft: '5%' }}
                 maxLength={50}
+                value={form.owner_name}
+                defaultValue={form.owner_name}
               />
             </View>
           </View>
-
-          <View style={styles.inputFieldsMainView1}>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Owner Phone No</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={(e) => {
-                    setForm(() => ({ ...form, owner_phone_no: e }));
-                  }}
-                  placeholder="Enter Owner Phone No"
-                  value={form.owner_phone_no}
-                  defaultValue={form.owner_phone_no}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={15}
-                />
-              </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Owner Mobile Number</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) =>
+                  setForm(() => ({ ...form, owner_phone_no: e }))
+                }
+                placeholder="Enter Number"
+                keyboardType="numeric"
+                style={{ width: '80%', marginLeft: '5%' }}
+                value={form.owner_phone_no}
+                defaultValue={form.owner_phone_no}
+              />
             </View>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Shop Phone No</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={(e) =>
-                    setForm(() => ({ ...form, shop_phone_no1: e }))
-                  }
-                  placeholder="Enter Shop Phone No"
-                  value={form.shop_phone_no1}
-                  defaultValue={form.shop_phone_no1}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={30}
-                />
-              </View>
+          </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Shop Phone Number</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) =>
+                  setForm(() => ({ ...form, shop_phone_no1: e }))
+                }
+                placeholder="Enter Number"
+                keyboardType="numeric"
+                style={{ width: '80%', marginLeft: '5%' }}
+                value={form.shop_phone_no1}
+                defaultValue={form.shop_phone_no1}
+              />
             </View>
           </View>
           <View style={styles.inputFieldsMainView}>
@@ -337,6 +348,8 @@ export default function ProfileScreen() {
                 placeholder="Enter Your Address"
                 style={{ width: '80%', marginLeft: '5%' }}
                 multiline={true}
+                value={form.address}
+                defaultValue={form.address}
               />
             </View>
           </View>
@@ -391,7 +404,7 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   titleContainer: {
-    height: '15%',
+    height: 120,
     width: '99%',
     alignSelf: 'center',
     borderBottomRightRadius: 50,

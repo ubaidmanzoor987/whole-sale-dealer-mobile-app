@@ -21,10 +21,8 @@ import {
 import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
 import AddBrandBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
 import { deleteBrand } from '@app/utils/apis';
 
 interface Props {
@@ -39,7 +37,7 @@ interface renderProps {
   type?: any;
 }
 
-function TableWidget(props: Props) {
+function Customers() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -56,18 +54,20 @@ function TableWidget(props: Props) {
   const onDismissSnackBar = () => setVisible(false);
 
   useEffect(() => {
-    if (brands.length === 0)
-      dispatch(fetchBrandListRequest({ user_id: user && user.id }));
-  }, [user]);
+    if (brands.length === 0 && user && user.id)
+    {
+      dispatch(fetchBrandListRequest({ user_id: user.id }));
+    }
+  }, [dispatch, user]);
 
   const cols = [
     {
-      name: 'Brand Name',
+      name: 'Name',
       col_name: 'brand_name',
       type: 'string',
     },
     {
-      name: 'Own Brand',
+      name: 'Phone Number',
       col_name: 'own_brand',
       type: 'boolean',
     },
@@ -120,6 +120,10 @@ function TableWidget(props: Props) {
     setIsEdit(false);
     addBrandsBottomSheetRef.current.open();
   };
+
+  const openAddCustomerScreen = () => {
+    navigation.navigate('AddCustomerScreen', {});
+  }
 
   const handleClose = (row: any) => {
     addBrandsBottomSheetRef.current.close();
@@ -208,20 +212,17 @@ function TableWidget(props: Props) {
     );
   };
 
+  console.log('brands', brands, user);
+
   return (
     <View style={styles.container}>
-      {/* <FilterWidget
-        columns={props.use_dashboard_cols ? columns : cols}
-        stocks={stocksData}
-        setStocks={setStocksProps}
-      /> */}
       <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Brands</Text>
-        <Text style={styles.titleSignText}>List of all brands</Text>
+        <Text style={styles.titleWelcomeText}>Customers</Text>
+        <Text style={styles.titleSignText}>List of Your Customers</Text>
       </View>
       <TouchableOpacity
         style={styles.addBrandTouchable}
-        onPress={openAddBrandSheet}
+        onPress={openAddCustomerScreen}
       >
         <MaterialCommunityIcons
           name="plus-box"
@@ -234,7 +235,7 @@ function TableWidget(props: Props) {
             color: 'black',
           }}
         >
-          Add Brands
+          Add Customers
         </Text>
       </TouchableOpacity>
       <FlatList
@@ -273,7 +274,7 @@ function TableWidget(props: Props) {
   );
 }
 
-export default React.memo(TableWidget);
+export default React.memo(Customers);
 
 const styles = StyleSheet.create({
   container: {

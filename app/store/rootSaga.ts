@@ -7,6 +7,7 @@ import addBrandSaga from './brands/addBrand/sagas';
 import listBrandSaga from './brands/listBrands/sagas';
 import listProductSaga from './products/listProducts/sagas';
 import addProductSaga from './products/addProduct/sagas';
+import listCustomersSaga from './customers/list/sagas';
 
 export function* rootSaga() {
   yield all([fork(registerSaga)]);
@@ -16,4 +17,5 @@ export function* rootSaga() {
   yield all([fork(listBrandSaga)]);
   yield all([fork(listProductSaga)]);
   yield all([fork(addProductSaga)]);
+  yield all([fork(listCustomersSaga)]);
 }
