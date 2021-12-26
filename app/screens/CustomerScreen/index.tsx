@@ -14,17 +14,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
 import {
-  getDataSelector as listBrandSelector,
+  getCustomerListSelector,
   getPendingSelector,
   getErrorSelector,
-} from '@app/store/brands/listBrands/selector';
-import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
+} from '@app/store/Customer/listCustomer/selector';
+import { fetchCustomersListRequest } from '@app/store/Customer/listCustomer/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
 import AddBrandBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
 import { deleteBrand } from '@app/utils/apis';
 
 interface Props {
@@ -43,10 +42,10 @@ function TableWidget(props: Props) {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const brands = useSelector(listBrandSelector);
+  const customerList = useSelector(getCustomerListSelector);
   const isPending = useSelector(getPendingSelector);
   const [selectedColumn, setSelectedColumn] = useState('');
-  const addBrandsBottomSheetRef = useRef() as any;
+  const viewCustomerBottomSheet = useRef() as any;
   const [row, setRow] = useState<any>({});
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [visible, setVisible] = useState(false);
@@ -56,19 +55,25 @@ function TableWidget(props: Props) {
   const onDismissSnackBar = () => setVisible(false);
 
   useEffect(() => {
-    if (brands.length === 0)
-      dispatch(fetchBrandListRequest({ user_id: user && user.id }));
+    if (customerList.length === 0)
+      console.log(customerList);
+      
+      dispatch(fetchCustomersListRequest({ user_id: user && user.id }));
   }, [user]);
+
+  useEffect(()=>{
+    console.log(customerList);
+  }, [customerList])
 
   const cols = [
     {
-      name: 'Brand Name',
-      col_name: 'brand_name',
+      name: 'Customer Name',
+      col_name: 'user_name',
       type: 'string',
     },
     {
-      name: 'Own Brand',
-      col_name: 'own_brand',
+      name: 'Phone Number',
+      col_name: 'owner_phone_no',
       type: 'boolean',
     },
     {
@@ -80,7 +85,7 @@ function TableWidget(props: Props) {
 
   const sortColumn = (col) => {
     const newDirection = direction === 'desc' ? 'asc' : 'desc';
-    const sortedData = _.orderBy(brands, [col], [newDirection]);
+    const sortedData = _.orderBy(customerList, [col], [newDirection]);
     setDirection(newDirection);
     // setStocks(sortedData);
     setSelectedColumn(col);
@@ -118,11 +123,11 @@ function TableWidget(props: Props) {
   const openAddBrandSheet = () => {
     setRow({});
     setIsEdit(false);
-    addBrandsBottomSheetRef.current.open();
+    viewCustomerBottomSheet.current.open();
   };
 
   const handleClose = (row: any) => {
-    addBrandsBottomSheetRef.current.close();
+    viewCustomerBottomSheet.current.close();
   };
 
   const handleDelete = (itemData: renderProps) => {
@@ -141,7 +146,7 @@ function TableWidget(props: Props) {
           };
           const res = await deleteBrand(req);
           if (res.message) {
-            dispatch(fetchBrandListRequest({ user_id: user && user.id }));
+            dispatch(fetchCustomersListRequest({ user_id: user && user.id }));
             setVisible(true);
             setMessage(res.message);
           } else if (res.error) {
@@ -157,7 +162,7 @@ function TableWidget(props: Props) {
   const handleEditClick = (itemData: renderProps) => {
     setRow(itemData.item);
     setIsEdit(true);
-    addBrandsBottomSheetRef.current.open();
+    viewCustomerBottomSheet.current.open();
   };
 
   const RenderedItemsData = (itemData: renderProps) => {
@@ -169,9 +174,9 @@ function TableWidget(props: Props) {
             backgroundColor: itemData.index % 2 == 1 ? '#CFD5E5' : 'white',
           }}
         >
-          <Text style={styles.columnRowTxt}>{itemData.item.brand_name}</Text>
+          <Text style={styles.columnRowTxt}>{itemData.item.user_name}</Text>
           <Text style={styles.columnRowTxt}>
-            {itemData.item.own_brand === 'true' ? 'Yes' : 'No'}
+            {itemData.item.owner_phone_no ? itemData.item.owner_phone_no : 'N/A'}
           </Text>
           <View
             style={{
@@ -189,11 +194,12 @@ function TableWidget(props: Props) {
               }}
             >
               <MaterialCommunityIcons
-                name="pencil"
+                name="eye"
                 size={20}
                 color={'#5460E0'}
               />
             </TouchableOpacity>
+
             <TouchableOpacity onPress={() => handleDelete(itemData)}>
               <MaterialCommunityIcons
                 name="delete"
@@ -210,14 +216,9 @@ function TableWidget(props: Props) {
 
   return (
     <View style={styles.container}>
-      {/* <FilterWidget
-        columns={props.use_dashboard_cols ? columns : cols}
-        stocks={stocksData}
-        setStocks={setStocksProps}
-      /> */}
       <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Brands</Text>
-        <Text style={styles.titleSignText}>List of all brands</Text>
+        <Text style={styles.titleWelcomeText}>Customer</Text>
+        <Text style={styles.titleSignText}>List of all customer</Text>
       </View>
       <TouchableOpacity
         style={styles.addBrandTouchable}
@@ -234,11 +235,11 @@ function TableWidget(props: Props) {
             color: 'black',
           }}
         >
-          Add Brands
+          Add Customer
         </Text>
       </TouchableOpacity>
       <FlatList
-        data={brands}
+        data={customerList}
         style={styles.flatListContainer}
         keyExtractor={(item, index) => index + ''}
         ListHeaderComponent={tableHeader}
@@ -253,7 +254,7 @@ function TableWidget(props: Props) {
       />
 
       <AddBrandBottomSheet
-        ref={addBrandsBottomSheetRef}
+        ref={viewCustomerBottomSheet}
         navigation={navigation}
         closeSheet={handleClose}
         row={row}
