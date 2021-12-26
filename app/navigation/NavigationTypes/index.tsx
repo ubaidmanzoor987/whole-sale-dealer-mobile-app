@@ -42,5 +42,6 @@ export type ProfileStacksList = {
 
 export type CustomerStacksList = {
   CustomerSceen: undefined;
+  AddCustomerScreen: undefined;
 };
 

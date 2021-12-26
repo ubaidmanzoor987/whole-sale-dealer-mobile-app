@@ -213,7 +213,7 @@ export default function AddProductScreen({
         user_id: row.user_id?.toString(),
       }));
       setBrandLabel(row.brand_name);
-      setHeading('Edit | View Product');
+      setHeading('View Product');
       setPreviewImage({
         uri: row.image1 !== '' ? ENV_VAR.baseUrl + row.image1 : '',
         height: -1,
@@ -728,7 +728,7 @@ const styles = StyleSheet.create({
   },
   titleWelcomeText: {
     paddingLeft: '5%',
-    fontSize: 40,
+    fontSize: 35,
     fontWeight: 'bold',
     paddingTop: '5%',
     color: '#5460E0',

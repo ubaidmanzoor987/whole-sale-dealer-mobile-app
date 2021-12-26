@@ -17,6 +17,7 @@ import {
 } from '../NavigationTypes';
 import ProfileScreen from '@app/screens/ProfileScreen';
 import CustomerScreen from '@app/screens/CustomerScreen';
+import AddCustomerScreen from '@app/screens/CustomerScreen/AddCustomers';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -102,6 +103,7 @@ function CustomerNavigator() {
   return (
     <CustomerStack.Navigator screenOptions={{ headerShown: false }}>
       <CustomerStack.Screen name="CustomerSceen" component={CustomerScreen} />
+      <CustomerStack.Screen name="AddCustomerScreen" component={AddCustomerScreen } />
     </CustomerStack.Navigator>
   );
 }

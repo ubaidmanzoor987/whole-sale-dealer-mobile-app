@@ -17,12 +17,15 @@ import { Text, View } from '@app/screens/Themed';
 import { getDataSelector } from '@app/store/user/login/selector';
 import { IUser } from '@app/store/user/login/types';
 import { logoutUser, updateUser } from '@app/utils/apis';
-import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
+import CameraScreenSheet from '@app/screens/MediaScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { fetchUserLoginClear } from '@app/store/user/login/actions';
+import {
+  fetchUserLoginClear,
+  userAutoLogin,
+} from '@app/store/user/login/actions';
+import { ImageResult } from 'expo-image-manipulator';
+import { ENV_VAR } from '@app/utils/environments';
 
 export interface option {
   title: string;
@@ -50,7 +53,11 @@ export default function ProfileScreen() {
     ''
   );
 
-  const [form, setForm] = useState<IUser>(() => ({
+  const [previewImage, setPreviewImage] = React.useState<ImageResult>();
+
+  const [openCameraModal, setOpenCameraModal] = React.useState<boolean>(false);
+
+  const [form, setForm] = useState<any>(() => ({
     user_name: '',
     shop_name: '',
     owner_name: '',
@@ -60,114 +67,79 @@ export default function ProfileScreen() {
     loc_long: '',
     loc_lat: '',
     address: '',
-    image: '',
+    image: {
+      uri: '',
+      height: -1,
+      width: -1,
+      base64: '',
+    },
     email: '',
     id: -1,
     token: '',
+    imageb64: '',
   }));
 
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
-    setForm(() => ({
-      ...form,
-      ...user,
-    }));
+    if (user) {
+      const data = {
+        user_name: user.user_name,
+        shop_name: user.shop_name,
+        owner_name: user.owner_name,
+        owner_phone_no: user.owner_phone_no,
+        shop_phone_no1: user.shop_phone_no1,
+        shop_phone_no2: user.shop_phone_no2,
+        loc_long: user.loc_long,
+        loc_lat: user.loc_lat,
+        address: user.address,
+        image: {
+          uri: ENV_VAR.baseUrl + user.image,
+          height: -1,
+          width: -1,
+          base64: user.imageb64,
+        },
+        email: user.email,
+        id: user.id,
+        token: user.token,
+        imageb64: user.imageb64,
+      } as any;
+      setForm(data);
+    }
   }, []);
 
+  useEffect(() => {
+    if (
+      previewImage &&
+      previewImage.uri &&
+      previewImage.uri !== form['image']['uri']
+    ) {
+      setForm(() => ({ ...form, ['image']: previewImage }));
+      // setIsUpdatedImage();
+    }
+  }, [previewImage]);
+
   const handleSubmit = async () => {
-    const res = await updateUser(form);
-    console.log("res", res);
+    const data = { ...form };
+    if (form.image && form.image.base64 !== '') {
+      data['imagebase64'] = `data:image/jpeg;base64,${form.image.base64},`;
+      // data['isImage1Update'] = isImage1Update;
+    }
+    setIsPending(true);
+    const res = await updateUser(data);
     if (res.message) {
       setVisible(true);
       setMessage(res.message);
+      setIsPending(false);
+      AsyncStorage.removeItem('user');
+      AsyncStorage.setItem('user', JSON.stringify(res.data));
+      dispatch(userAutoLogin(res.data));
+      setIsError(false);
     } else if (res.error) {
       setVisible(true);
       setMessage(res.message);
       setIsError(true);
-    }
-  };
-
-  const askForPermission = async () => {
-    const permissionResult = await Camera.requestCameraPermissionsAsync();
-    if (permissionResult.status !== 'granted') {
-      Alert.alert('no permissions to access camera!', 'ok');
-      return false;
-    }
-    return true;
-  };
-
-  const getImageFromCamera = async () => {
-    try {
-      const hasPermission = await askForPermission();
-      if (!hasPermission) {
-        console.log('No Permissions');
-        return;
-      }
-      let capturedImage = await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        aspect: [4, 3],
-        quality: 1,
-        base64: true,
-      });
-
-      if (!capturedImage.cancelled) {
-        processImage(capturedImage.uri);
-      }
-    } catch (ex) {
-      console.log('Exception in Opening Camera as', ex);
-    }
-  };
-
-  const getImageFromGallery = async () => {
-    try {
-      const hasPermission = await askForPermission();
-      if (!hasPermission) {
-        console.log('No Permissions');
-        return;
-      }
-      const galleryImage = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-        base64: true,
-      });
-      if (!galleryImage.cancelled) {
-        processImage(galleryImage.uri);
-        console.log(galleryImage.uri);
-      }
-    } catch (ex) {
-      console.log('Exception in Opening Camera as', ex);
-    }
-  };
-
-  const processImage = async (imageUri) => {
-    try {
-      let processedImage = (await ImageManipulator.manipulateAsync(
-        imageUri,
-        [{ resize: { width: 400 } }],
-        { format: 'jpeg' as any, base64: true }
-      )) as any;
-      setProfileImgUrl(`data:image/jpeg;base64,${processedImage.base64}`);
-      setSelectedImage(processedImage.base64);
-      const data = {
-        image: `data:image/jpeg;base64,${processedImage.base64}`,
-        user_id: form.id,
-        email: form.email,
-        shop_name: form.email,
-      };
-      const res = await updateUser(data);
-      if (res.message) {
-        setVisible(true);
-        setMessage(res.message);
-      } else if (res.error) {
-        setVisible(true);
-        setMessage(res.message);
-        setIsError(true);
-      }
-    } catch (ex) {
-      console.log('Exception in processImage', ex);
+      setIsPending(false);
     }
   };
 
@@ -175,11 +147,11 @@ export default function ProfileScreen() {
     if (user && user.id) {
       const res = await logoutUser({ user_id: user.id });
       if (res.message) {
-        AsyncStorage.removeItem("user");
+        AsyncStorage.removeItem('user');
         dispatch(fetchUserLoginClear());
         setVisible(true);
         setMessage(res.message);
-        navigation.navigate("Root");
+        navigation.navigate('Root');
       } else if (res.error) {
         setVisible(true);
         setMessage(res.message);
@@ -187,6 +159,13 @@ export default function ProfileScreen() {
       }
     }
   };
+
+  const showCameraModal = () => {
+    setOpenCameraModal(true);
+  };
+
+  console.log("user", form);
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -216,17 +195,33 @@ export default function ProfileScreen() {
         </View>
       </View>
       <View style={styles.fieldsView}>
-        <TouchableOpacity onPress={getImageFromGallery}>
-          <Image
-            style={{
-              width: 150,
-              height: 150,
-              resizeMode: 'contain',
-              borderWidth: 1,
-              borderColor: 'lightgrey',
-            }}
-            source={require('@app/assets/images/main.jpeg')}
-          />
+        <TouchableOpacity
+          onPress={showCameraModal}
+          style={{ borderWidth: 1, borderColor: 'grey' }}
+        >
+          {form.image && form.image.uri && form.image.base64 ? (
+            <Image
+              style={{
+                width: 150,
+                height: 150,
+                resizeMode: 'contain',
+                borderWidth: 1,
+                borderColor: 'lightgrey',
+              }}
+              source={{ uri: form.image.uri }}
+            />
+          ) : (
+            <Image
+              style={{
+                width: 150,
+                height: 150,
+                resizeMode: 'contain',
+                borderWidth: 1,
+                borderColor: 'lightgrey',
+              }}
+              source={require('@app/assets/images/sampleImage.png')}
+            />
+          )}
         </TouchableOpacity>
       </View>
       <KeyboardAwareScrollView>
@@ -244,42 +239,41 @@ export default function ProfileScreen() {
                 defaultValue={form.email}
                 placeholder="Enter Email"
                 style={styles.inputField}
+                editable={false}
               />
             </View>
           </View>
-          <View style={styles.inputFieldsMainView1}>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>User Name*</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  placeholder="Enter User name"
-                  value={form.user_name}
-                  defaultValue={form.user_name}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={15}
-                />
-              </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>User Name*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                placeholder="User Name"
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={50}
+                defaultValue={form.user_name}
+                value={form.user_name}
+                editable={false}
+              />
             </View>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Shop Name*</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={() => console.log()}
-                  placeholder="Enter Shop Name"
-                  value={form.shop_name}
-                  defaultValue={form.shop_name}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={30}
-                />
-              </View>
+          </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Shop Name*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) => setForm(() => ({ ...form, shop_name: e }))}
+                placeholder="Enter Name"
+                style={{ width: '80%', marginLeft: '5%' }}
+                maxLength={50}
+                defaultValue={form.shop_name}
+              />
             </View>
           </View>
 
@@ -298,48 +292,47 @@ export default function ProfileScreen() {
                 keyboardType="email-address"
                 style={{ width: '80%', marginLeft: '5%' }}
                 maxLength={50}
+                value={form.owner_name}
+                defaultValue={form.owner_name}
               />
             </View>
           </View>
-
-          <View style={styles.inputFieldsMainView1}>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Owner Phone No</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={(e) => {
-                    setForm(() => ({ ...form, owner_phone_no: e }));
-                  }}
-                  placeholder="Enter Owner Phone No"
-                  value={form.owner_phone_no}
-                  defaultValue={form.owner_phone_no}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={15}
-                />
-              </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Owner Mobile Number</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) =>
+                  setForm(() => ({ ...form, owner_phone_no: e }))
+                }
+                placeholder="Enter Number"
+                keyboardType="numeric"
+                style={{ width: '80%', marginLeft: '5%' }}
+                value={form.owner_phone_no}
+                defaultValue={form.owner_phone_no}
+              />
             </View>
-            <View style={styles.userNameView}>
-              <Text style={styles.labelText}>Shop Phone No</Text>
-              <View
-                style={{
-                  ...styles.inputFieldSubView1,
-                }}
-              >
-                <TextInputNative
-                  onChangeText={(e) =>
-                    setForm(() => ({ ...form, shop_phone_no1: e }))
-                  }
-                  placeholder="Enter Shop Phone No"
-                  value={form.shop_phone_no1}
-                  defaultValue={form.shop_phone_no1}
-                  style={{ marginLeft: '11%' }}
-                  maxLength={30}
-                />
-              </View>
+          </View>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Shop Phone Number</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+              }}
+            >
+              <TextInputNative
+                onChangeText={(e) =>
+                  setForm(() => ({ ...form, shop_phone_no1: e }))
+                }
+                placeholder="Enter Number"
+                keyboardType="numeric"
+                style={{ width: '80%', marginLeft: '5%' }}
+                value={form.shop_phone_no1}
+                defaultValue={form.shop_phone_no1}
+              />
             </View>
           </View>
           <View style={styles.inputFieldsMainView}>
@@ -355,6 +348,8 @@ export default function ProfileScreen() {
                 placeholder="Enter Your Address"
                 style={{ width: '80%', marginLeft: '5%' }}
                 multiline={true}
+                value={form.address}
+                defaultValue={form.address}
               />
             </View>
           </View>
@@ -384,6 +379,11 @@ export default function ProfileScreen() {
           </View>
         </View>
       </KeyboardAwareScrollView>
+      <CameraScreenSheet
+        openModal={openCameraModal}
+        closeModal={setOpenCameraModal}
+        setSelectedImage={setPreviewImage}
+      />
       <Snackbar
         visible={visible}
         onDismiss={onDismissSnackBar}
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   titleContainer: {
-    height: '15%',
+    height: 120,
     width: '99%',
     alignSelf: 'center',
     borderBottomRightRadius: 50,

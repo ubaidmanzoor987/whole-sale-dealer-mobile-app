@@ -25,7 +25,6 @@ import ProductBottomSheet from './customer/editViewproductBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
 import { ENV_VAR } from '@app/utils/environments';
-import { IAddProductState } from './AddEditProductScreen';
 
 interface Props {
   rows?: any;

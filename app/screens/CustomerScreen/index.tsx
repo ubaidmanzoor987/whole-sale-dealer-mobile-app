@@ -19,9 +19,10 @@ import {
   getErrorSelector,
 } from '@app/store/Customer/listCustomer/selector';
 import { fetchCustomersListRequest } from '@app/store/Customer/listCustomer/actions';
+import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions'
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
+import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
 import AddBrandBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { deleteBrand } from '@app/utils/apis';
@@ -38,11 +39,12 @@ interface renderProps {
   type?: any;
 }
 
-function TableWidget(props: Props) {
+function Customers() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const customerList = useSelector(getCustomerListSelector);
+  const brands = useSelector(getBrandSelector);
   const isPending = useSelector(getPendingSelector);
   const [selectedColumn, setSelectedColumn] = useState('');
   const viewCustomerBottomSheet = useRef() as any;
@@ -55,11 +57,11 @@ function TableWidget(props: Props) {
   const onDismissSnackBar = () => setVisible(false);
 
   useEffect(() => {
-    if (customerList.length === 0)
-      console.log(customerList);
-      
-      dispatch(fetchCustomersListRequest({ user_id: user && user.id }));
-  }, [user]);
+    if (brands.length === 0 && user && user.id)
+    {
+      dispatch(fetchBrandListRequest({ user_id: user.id }));
+    }
+  }, [dispatch, user]);
 
   useEffect(()=>{
     console.log(customerList);
@@ -125,6 +127,10 @@ function TableWidget(props: Props) {
     setIsEdit(false);
     viewCustomerBottomSheet.current.open();
   };
+
+  const openAddCustomerScreen = () => {
+    navigation.navigate('AddCustomerScreen', {});
+  }
 
   const handleClose = (row: any) => {
     viewCustomerBottomSheet.current.close();
@@ -214,15 +220,17 @@ function TableWidget(props: Props) {
     );
   };
 
+  // console.log('brands', brands, user);
+
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Customer</Text>
-        <Text style={styles.titleSignText}>List of all customer</Text>
+        <Text style={styles.titleWelcomeText}>Customers</Text>
+        <Text style={styles.titleSignText}>List of Your Customers</Text>
       </View>
       <TouchableOpacity
         style={styles.addBrandTouchable}
-        onPress={openAddBrandSheet}
+        onPress={openAddCustomerScreen}
       >
         <MaterialCommunityIcons
           name="plus-box"
@@ -235,7 +243,7 @@ function TableWidget(props: Props) {
             color: 'black',
           }}
         >
-          Add Customer
+          Add Customers
         </Text>
       </TouchableOpacity>
       <FlatList
@@ -274,7 +282,7 @@ function TableWidget(props: Props) {
   );
 }
 
-export default React.memo(TableWidget);
+export default React.memo(Customers);
 
 const styles = StyleSheet.create({
   container: {
