@@ -3,11 +3,7 @@ import Constants from 'expo-constants';
 const ENVs = {
   dev: {
     environment: 'development' as 'development' | 'staging' | 'production',
-<<<<<<< HEAD
     baseUrl: 'http://192.168.1.5:5000/' as string,
-=======
-    baseUrl: 'http://192.168.1.14:5000/' as string,
->>>>>>> 299973fbf1ad2192278ee54d8f220c8cf0819fd4
     clientId:
       '984919890336-1e2982lmg8faeha9h63d17t4utlon121.apps.googleusercontent.com' as string,
   },
