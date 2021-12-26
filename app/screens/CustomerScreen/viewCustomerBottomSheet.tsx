@@ -1,31 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { Modalize } from 'react-native-modalize';
+
 import {
   StyleSheet,
-  View,
-  Text,
-  Dimensions,
-  TextInput,
   ActivityIndicator,
-  ToastAndroid,
+  TextInput as TextInputNative,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { Modalize } from 'react-native-modalize';
-import { Ionicons } from '@expo/vector-icons';
-import { Button, Checkbox } from 'react-native-paper';
-
-//Redux
-import { useSelector, useDispatch } from 'react-redux';
-import { getDataSelector } from '@app/store/user/login/selector';
-import {
-  getDataSelector as getBrandSelector,
-  getPendingSelector,
-  getErrorSelector,
-} from '@app/store/brands/addBrand/selector';
-import {
-  fetchBrandCreateClear,
-  fetchBrandCreateRequest,
-} from '@app/store/brands/addBrand/actions';
-import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
-import { updateBrand } from '@app/utils/apis';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Text, View } from '@app/screens/Themed';
+import { ENV_VAR } from '@app/utils/environments';
 
 interface Props {
   ref: React.Ref<any>;
@@ -35,101 +24,59 @@ interface Props {
   isEdit?: boolean;
 }
 
-export interface AddBrand {
-  brand_name: string;
-  own_brand: string;
-  error?: string;
-  user_id: number | null;
-  brand_id?: number;
-}
-
 const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
-  const dispatch = useDispatch();
-  const brand = useSelector(getBrandSelector);
-  const isPending = useSelector(getPendingSelector);
-  const error = useSelector(getErrorSelector);
-  const user = useSelector(getDataSelector);
-  const [updatePending, setUpdatePending] = useState<boolean>(false);
-
-  const [form, setForm] = useState<AddBrand>(() => ({
-    own_brand: "false",
-    brand_name: '',
-    error: '',
-    user_id: -1,
+ 
+  const [form, setForm] = useState<any>(() => ({
+    user_name: '',
+    shop_name: '',
+    owner_name: '',
+    owner_phone_no: '',
+    shop_phone_no1: '',
+    shop_phone_no2: '',
+    loc_long: '',
+    loc_lat: '',
+    address: '',
+    image: {
+      uri: '',
+      height: -1,
+      width: -1,
+      base64: '',
+    },
+    email: '',
+    id: -1,
+    token: '',
+    imageb64: '',
   }));
 
-  useEffect(() => {
-    if (error && error.length > 0) {
-      setForm(() => ({
-        ...form,
-        error,
-      }));
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (_.isEdit === true && _.row?.brand_name) {
-      setForm({
-        ...form,
-        brand_name: _.row.brand_name,
-        own_brand: _.row.own_brand,
-        brand_id: _.row.id,
-      });
-    } else {
-      setForm({
-        own_brand: "false",
-        brand_name: '',
-        error: '',
-        user_id: -1,
-        brand_id: undefined,
-      });
-    }
-  }, [_.isEdit, _.row]);
-
-  useEffect(() => {
-    if (brand && brand.brand_name) {
-      dispatch(fetchBrandListRequest({ user_id: user && user.id }));
-      setForm({
-        own_brand: "false",
-        brand_name: '',
-        error: '',
-        user_id: -1,
-      });
-      _.closeSheet();
-      dispatch(fetchBrandCreateClear());
-    }
-  }, [brand]);
-
-  const handleSubmit = async () => {
-    const data = form;
-    if (_.isEdit === false) {
-      data['user_id'] = user && user.id;
-      delete data['error'];
-      dispatch(fetchBrandCreateRequest(data));
-    } else {
-      setUpdatePending(true);
-      data['user_id'] = user && user.id;
-      const res = await updateBrand(data);
-      if (res.message) {
-        dispatch(fetchBrandListRequest({user_id: user && user.id}))
-        setUpdatePending(false);
-        setForm({
-          own_brand: "false",
-          brand_name: '',
-          error: '',
-          user_id: -1,
-        });
-        _.closeSheet();
-      } else if (res.error) {
-        setUpdatePending(false);
-      }
-    }
-  };
-
+  useEffect(()=>{
+    const data = {
+      user_name: _.row.user_name,
+      shop_name: _.row.shop_name,
+      owner_name: _.row.owner_name,
+      owner_phone_no: _.row.owner_phone_no,
+      shop_phone_no1: _.row.shop_phone_no1,
+      shop_phone_no2: _.row.shop_phone_no2,
+      loc_long: _.row.loc_long,
+      loc_lat: _.row.loc_lat,
+      address: _.row.address,
+      image: {
+        uri: ENV_VAR.baseUrl + _.row.image,
+        height: -1,
+        width: -1,
+        base64: _.row.imageb64,
+      },
+      email: _.row.email,
+      id: _.row.id,
+      token: _.row.token,
+      imageb64: _.row.imageb64,
+    } as any;
+    setForm(data);
+  },[])
+ 
   return (
     <>
       <Modalize ref={ref} modalHeight={Dimensions.get('screen').height / 1.2}>
-        <View style={styles.innerContainer}>
+        <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.titleContainer}>
             <Text style={styles.titleWelcomeText}>
               {_.isEdit === false ? 'Add Brand' : 'Edit Brand'}
@@ -139,51 +86,164 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
             </Text>
           </View>
           <View style={styles.fieldsView}>
-            <View style={styles.inputFieldsMainView}>
-              <Text style={styles.labelText}>Brand Name</Text>
-              <View style={styles.inputFieldSubView}>
-                <TextInput
-                  placeholder="Enter Brand Name"
-                  style={{ width: '85%', paddingLeft: '5%' }}
-                  maxLength={40}
-                  onChangeText={(text: string) => {
-                    setForm(() => ({ ...form, brand_name: text }));
+              {form.image && form.image.uri && form.image.base64 ? (
+                <Image
+                  style={{
+                    width: 150,
+                    height: 150,
+                    resizeMode: 'contain',
+                    borderWidth: 1,
+                    borderColor: 'lightgrey',
                   }}
-                  value={form.brand_name}
-                />
-              </View>
-            </View>
-            <View style={styles.checkboxContainer}>
-              <Checkbox
-                status={form.own_brand === "true" ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  setForm(() => ({ ...form, own_brand: form.own_brand === "true" ? "false" : "true" }));
-                }}
-              />
-              <Text style={styles.label}>Own Brand</Text>
-            </View>
-            <View style={styles.loginButtonView}>
-              {isPending || updatePending ? (
-                <ActivityIndicator
-                  size="large"
-                  color="#5460E0"
-                  style={styles.activitIndicator}
+                  source={{ uri: form.image.uri }}
                 />
               ) : (
-                <Button
-                  style={styles.loginButton}
-                  mode="contained"
-                  onPress={handleSubmit}
-                >
-                  <Text style={styles.loginButtonText}>
-                    {_.isEdit === false ? 'Add Brand' : 'Update Brand'}
-                  </Text>
-                </Button>
+                <Image
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: 150 / 2,
+                    overflow: "hidden",
+                    borderWidth: 3,
+                    borderColor: "lightgrey"
+                  }}
+                  source={require('@app/assets/images/sampleImage.png')}
+                />
               )}
-            </View>
-            <Text style={{ color: 'red', fontSize: 13 }}>{form.error}</Text>
+            
           </View>
-        </View>
+          <KeyboardAwareScrollView>
+            <View style={styles.fieldsView}>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Email*</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) => setForm(() => ({ ...form, email: e }))}
+                    value={form.email}
+                    defaultValue={form.email}
+                    placeholder="Enter Email"
+                    style={styles.inputField}
+                    editable={false}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>User Name</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    placeholder="User Name"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    maxLength={50}
+                    defaultValue={form.user_name}
+                    value={form.user_name}
+                    // editable={false}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Shop Name*</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) => setForm(() => ({ ...form, shop_name: e }))}
+                    placeholder="Enter Name"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    maxLength={50}
+                    defaultValue={form.shop_name}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Owner Name</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) =>
+                      setForm(() => ({ ...form, owner_name: e }))
+                    }
+                    placeholder="Owner Name"
+                    keyboardType="email-address"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    maxLength={50}
+                    value={form.owner_name}
+                    defaultValue={form.owner_name}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Owner Mobile Number</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) =>
+                      setForm(() => ({ ...form, owner_phone_no: e }))
+                    }
+                    placeholder="Enter Number"
+                    keyboardType="numeric"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    value={form.owner_phone_no}
+                    defaultValue={form.owner_phone_no}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Shop Phone Number</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) =>
+                      setForm(() => ({ ...form, shop_phone_no1: e }))
+                    }
+                    placeholder="Enter Number"
+                    keyboardType="numeric"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    value={form.shop_phone_no1}
+                    defaultValue={form.shop_phone_no1}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputFieldsMainView}>
+                <Text style={styles.labelText}>Address</Text>
+                <View
+                  style={{
+                    ...styles.inputFieldSubView,
+                    height: 70,
+                  }}
+                >
+                  <TextInputNative
+                    onChangeText={(e) => setForm(() => ({ ...form, address: e }))}
+                    placeholder="Enter Your Address"
+                    style={{ width: '80%', marginLeft: '5%' }}
+                    multiline={true}
+                    value={form.address}
+                    defaultValue={form.address}
+                  />
+                </View>
+              </View>
+            </View>
+          </KeyboardAwareScrollView>
+        </ScrollView>
       </Modalize>
     </>
   );
@@ -195,7 +255,7 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    padding: 10,
+    padding: 0,
   },
   textStyle: {
     color: '#1D1D1F',
@@ -208,7 +268,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     backgroundColor: '#F0F0F8',
-    height: '20%',
+    height: '13%',
     width: '99%',
     alignSelf: 'center',
     borderBottomRightRadius: 80,
@@ -240,6 +300,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingLeft: '5%',
     color: 'grey',
+  },
+  labelValue: {
+    alignSelf: 'flex-start',
+    paddingLeft: '5%',
+    color: 'black',
   },
   inputFieldSubView: {
     display: 'flex',

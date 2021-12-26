@@ -14,16 +14,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
 import {
-  getCustomerListSelector,
-  getPendingSelector,
-  getErrorSelector,
-} from '@app/store/Customer/listCustomer/selector';
-import { fetchCustomersListRequest } from '@app/store/Customer/listCustomer/actions';
+  getCustomersListDataSelector,
+  getCustomersListPendingSelector,
+  getCustomersListErrorSelector,
+} from '@app/store/customers/list/selector';
+import { fetchListCustomerRequest } from '@app/store/customers/list/actions';
 import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions'
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
-import AddBrandBottomSheet from './viewCustomerBottomSheet';
+import ViewCustomerBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { deleteBrand } from '@app/utils/apis';
 
@@ -43,9 +43,9 @@ function Customers() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const customerList = useSelector(getCustomerListSelector);
+  const customerList = useSelector(getCustomersListDataSelector);
   const brands = useSelector(getBrandSelector);
-  const isPending = useSelector(getPendingSelector);
+  const isPending = useSelector(getCustomersListPendingSelector);
   const [selectedColumn, setSelectedColumn] = useState('');
   const viewCustomerBottomSheet = useRef() as any;
   const [row, setRow] = useState<any>({});
@@ -56,15 +56,18 @@ function Customers() {
   const user = useSelector(getUserSelector);
   const onDismissSnackBar = () => setVisible(false);
 
-  useEffect(() => {
-    if (brands.length === 0 && user && user.id)
-    {
-      dispatch(fetchBrandListRequest({ user_id: user.id }));
-    }
-  }, [dispatch, user]);
+  // useEffect(() => {
+  //   if (brands.length === 0 && user && user.id)
+  //   {
+  //     dispatch(fetchBrandListRequest({ user_id: user.id }));
+  //   }
+  // }, [dispatch, user]);
 
   useEffect(()=>{
     console.log(customerList);
+    if(customerList && customerList.length == 0){
+      dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
+    }
   }, [customerList])
 
   const cols = [
@@ -152,7 +155,7 @@ function Customers() {
           };
           const res = await deleteBrand(req);
           if (res.message) {
-            dispatch(fetchCustomersListRequest({ user_id: user && user.id }));
+            dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
             setVisible(true);
             setMessage(res.message);
           } else if (res.error) {
@@ -261,7 +264,7 @@ function Customers() {
         )}
       />
 
-      <AddBrandBottomSheet
+      <ViewCustomerBottomSheet
         ref={viewCustomerBottomSheet}
         navigation={navigation}
         closeSheet={handleClose}

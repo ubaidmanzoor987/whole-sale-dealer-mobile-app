@@ -19,7 +19,7 @@ export interface IUser {
 }
 
 export interface requestListCustomer {
-  user_id: number;
+  user_id: number | null;
 }
 
 export interface responseUserLogin {
