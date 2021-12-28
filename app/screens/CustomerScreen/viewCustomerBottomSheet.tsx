@@ -79,10 +79,10 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.titleContainer}>
             <Text style={styles.titleWelcomeText}>
-              {_.isEdit === false ? 'Add Brand' : 'Edit Brand'}
+              {form.user_name}
             </Text>
             <Text style={styles.titleSignText}>
-              Fill required information for add new brand.
+              {form.email}
             </Text>
           </View>
           <View style={styles.fieldsView}>
