@@ -8,9 +8,10 @@ import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './app/navigation/MainNavigator';
 import store from './app/store';
+import ExpoNotification from './app/utils/notification';
+
 
 export default function App() {
-  
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
 
@@ -21,6 +22,7 @@ export default function App() {
       <Provider store={store}>
         <SafeAreaProvider>
           <Navigation colorScheme="light" />
+          <ExpoNotification/>
           <StatusBar style="dark" />
         </SafeAreaProvider>
       </Provider>

@@ -33,7 +33,7 @@ export const updateUser = async (body) => {
   }
 };
 
-export const logoutUser = async(body) => {
+export const logoutUser = async (body) => {
   try {
     const response = await axios.post('user/logout', body);
     return response.data;
@@ -42,7 +42,7 @@ export const logoutUser = async(body) => {
       error: e.response ? e.response.data.error : e.message,
     };
   }
-}
+};
 
 export const updateProduct = async (body) => {
   try {
@@ -58,6 +58,17 @@ export const updateProduct = async (body) => {
 export const deleteProdouct = async (body) => {
   try {
     const response = await axios.post('product/delete', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+};
+
+export const expoPushToken = async (body) => {
+  try {
+    const response = await axios.post('user/notification/register', body);
     return response.data;
   } catch (e: any) {
     return {
