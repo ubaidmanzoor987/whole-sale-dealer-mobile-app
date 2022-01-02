@@ -48,6 +48,11 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
     imageb64: '',
   }));
 
+  // useEffect(()=>{
+  //   console.log(_, '____');
+    
+  // },[_])
+
   useEffect(()=>{
     const data = {
       user_name: _.row.user_name,
@@ -71,7 +76,10 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
       imageb64: _.row.imageb64,
     } as any;
     setForm(data);
-  },[])
+
+    // console.log(_.row ,'y row');
+    
+  },[_])
  
   return (
     <>

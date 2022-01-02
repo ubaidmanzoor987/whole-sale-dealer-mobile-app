@@ -64,7 +64,7 @@ function Customers() {
   // }, [dispatch, user]);
 
   useEffect(()=>{
-    console.log(customerList);
+    // console.log(customerList);
     if(customerList && customerList.length == 0){
       dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
     }
@@ -126,7 +126,7 @@ function Customers() {
   );
 
   const openAddBrandSheet = () => {
-    setRow({});
+    // setRow({});
     setIsEdit(false);
     viewCustomerBottomSheet.current.open();
   };
