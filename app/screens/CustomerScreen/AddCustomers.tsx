@@ -18,6 +18,7 @@ import _ from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 import { fetchListCustomerRequest } from '@app/store/customers/list/actions';
+import { fetchListShopkeeperCustomerRequest } from '@app/store/customers/shopkeeperCustomerList/actions'
 import {
   getCustomersListDataSelector,
   getCustomersListPendingSelector,
@@ -25,6 +26,8 @@ import {
 } from '@app/store/customers/list/selector';
 import { ENV_VAR } from '@app/utils/environments';
 import { IUser } from '@app/store/user/login/types';
+import { addCustomer } from '@app/utils/apis'
+import { Alert } from 'native-base';
 
 export default function AddCustomerScreen() {
   const navigation = useNavigation();
@@ -71,6 +74,20 @@ export default function AddCustomerScreen() {
       setCustomers(customersList);
     }
   }, [search]);
+
+  const handleAddCustomer = async (item) =>{
+    let res = await addCustomer({user_id: user&&user.id, relevant_id: item.id});
+    if (res.message) {
+      dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
+      dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
+      goBack();
+    } else if (res.error) {
+      // Alert(res.error);
+      Alert(res.error);
+    }
+    
+    console.log(item);
+  }
 
   const RenderedItemsData = ({ item, index }) => {
     return (
@@ -127,7 +144,7 @@ export default function AddCustomerScreen() {
             justifyContent: 'center',
           }}
         >
-          <TouchableOpacity onPress={() => {}} style={{ marginRight: '14%' }}>
+          <TouchableOpacity onPress={()=>{handleAddCustomer(item)}} style={{ marginRight: '14%' }}>
             <MaterialCommunityIcons name="check" color="green" size={30} />
           </TouchableOpacity>
         </View>
