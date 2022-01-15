@@ -16,7 +16,6 @@ export interface IUser {
   id: number;
   token: string;
   imageb64: string;
-  expo_push_token: string;
 }
 
 export interface requestListCustomer {

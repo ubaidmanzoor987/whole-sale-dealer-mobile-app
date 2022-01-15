@@ -8,7 +8,6 @@ import listBrandReducer from './brands/listBrands/reducer';
 import addProductReducer from './products/addProduct/reducer';
 import listProductReducer from './products/listProducts/reducer';
 import listCustomerReducer from './customers/list/reducer';
-import listShopkeeperCustomers from './customers/shopkeeperCustomerList/reducer'
 
 const rootReducer = combineReducers({
   register: registerReducer,
@@ -19,7 +18,6 @@ const rootReducer = combineReducers({
   products: listProductReducer,
   addProduct: addProductReducer,
   customersList: listCustomerReducer,
-  shopkeeperCustomersList: listShopkeeperCustomers
 });
 
 export type AppState = ReturnType<typeof rootReducer>;
