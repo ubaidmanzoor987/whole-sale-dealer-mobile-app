@@ -1,0 +1,4 @@
+export const Fetch_Shopkeeper_Customer_List_Request = 'Fetch_Shopkeeper_Customer_List_Request';
+export const Fetch_Shopkeeper_Customer_List_Success = 'Fetch_Shopkeeper_Customer_List_Success';
+export const Fetch_Shopkeeper_Customer_List_Failure = 'Fetch_Shopkeeper_Customer_List_Failure';
+export const Fetch_Shopkeeper_Customer_List_Clear = 'Fetch_Shopkeeper_Customer_List_Clear';

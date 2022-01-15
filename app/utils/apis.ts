@@ -33,6 +33,28 @@ export const updateUser = async (body) => {
   }
 };
 
+export const removeCustomer = async (body) =>{
+  try {
+    const response = await axios.post('user/removeCustomer_Shopkeeper', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+}
+
+export const addCustomer = async (body) =>{
+  try {
+    const response = await axios.post('user/addCustomer_Shopkeeper', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+}
+
 export const logoutUser = async (body) => {
   try {
     const response = await axios.post('user/logout', body);

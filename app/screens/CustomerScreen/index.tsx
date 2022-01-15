@@ -14,18 +14,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import Constants from 'expo-constants';
 import {
-  getCustomersListDataSelector,
-  getCustomersListPendingSelector,
-  getCustomersListErrorSelector,
-} from '@app/store/customers/list/selector';
-import { fetchListCustomerRequest } from '@app/store/customers/list/actions';
-import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions'
+  getShopkeeperCustomersListDataSelector,
+  getShopkeeperCustomersListPendingSelector,
+} from '@app/store/customers/shopkeeperCustomerList/selector';
+import { fetchListShopkeeperCustomerRequest } from '@app/store/customers/shopkeeperCustomerList/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector } from '@app/store/brands/listBrands/selector';
 import ViewCustomerBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { deleteBrand } from '@app/utils/apis';
+import { removeCustomer } from '@app/utils/apis';
+import { fetchListCustomerRequest } from '@app/store/customers/list/actions';
 
 interface Props {
   rows?: any;
@@ -43,9 +41,8 @@ function Customers() {
   const [direction, setDirection] = useState<'desc' | 'asc'>('desc');
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const customerList = useSelector(getCustomersListDataSelector);
-  const brands = useSelector(getBrandSelector);
-  const isPending = useSelector(getCustomersListPendingSelector);
+  const customerList = useSelector(getShopkeeperCustomersListDataSelector);
+  const isPending = useSelector(getShopkeeperCustomersListPendingSelector);
   const [selectedColumn, setSelectedColumn] = useState('');
   const viewCustomerBottomSheet = useRef() as any;
   const [row, setRow] = useState<any>({});
@@ -64,11 +61,13 @@ function Customers() {
   // }, [dispatch, user]);
 
   useEffect(()=>{
-    // console.log(customerList);
+    console.log(customerList, 'list customer');
     if(customerList && customerList.length == 0){
-      dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
+      dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
     }
-  }, [customerList])
+  }, [])
+
+  console.log('customer', customerList);
 
   const cols = [
     {
@@ -140,6 +139,7 @@ function Customers() {
   };
 
   const handleDelete = (itemData: renderProps) => {
+    console.log(itemData);
     Alert.alert('Warning', 'Are you sure You want to delete!', [
       {
         text: 'Cancel',
@@ -150,17 +150,19 @@ function Customers() {
         text: 'Yes',
         onPress: async () => {
           const req = {
-            brand_id: itemData.item.id,
+            relevant_id: itemData.item.id,
             user_id: user?.id,
           };
-          const res = await deleteBrand(req);
+          const res = await removeCustomer(req);
           if (res.message) {
-            dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
+            dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
+            dispatch(fetchListCustomerRequest({user_id: user && user.id}));
             setVisible(true);
             setMessage(res.message);
           } else if (res.error) {
+            // Alert(res.error);
             setVisible(true);
-            setMessage(res.message);
+            setMessage(res.error);
             setIsError(true);
           }
         },
@@ -175,6 +177,7 @@ function Customers() {
   };
 
   const RenderedItemsData = (itemData: renderProps) => {
+    console.log("itemData", itemData);
     return (
       <TouchableWithoutFeedback>
         <View
