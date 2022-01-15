@@ -53,21 +53,11 @@ function Customers() {
   const user = useSelector(getUserSelector);
   const onDismissSnackBar = () => setVisible(false);
 
-  // useEffect(() => {
-  //   if (brands.length === 0 && user && user.id)
-  //   {
-  //     dispatch(fetchBrandListRequest({ user_id: user.id }));
-  //   }
-  // }, [dispatch, user]);
-
   useEffect(()=>{
-    console.log(customerList, 'list customer');
     if(customerList && customerList.length == 0){
       dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
     }
   }, [])
-
-  console.log('customer', customerList);
 
   const cols = [
     {

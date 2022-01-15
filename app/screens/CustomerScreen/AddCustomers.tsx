@@ -13,7 +13,6 @@ import {
   TextInput as TextInputNative,
   Image,
 } from 'react-native';
-import { Avatar, Card } from 'react-native-paper';
 import _ from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
@@ -24,7 +23,9 @@ import {
   getCustomersListErrorSelector,
 } from '@app/store/customers/list/selector';
 import { ENV_VAR } from '@app/utils/environments';
+import { addCustomer } from '@app/utils/apis';
 import { IUser } from '@app/store/user/login/types';
+import { fetchListShopkeeperCustomerRequest } from '@app/store/customers/shopkeeperCustomerList/actions';
 
 export default function AddCustomerScreen() {
   const navigation = useNavigation();
@@ -36,7 +37,7 @@ export default function AddCustomerScreen() {
   const [error, setError] = useState<string>('');
 
   const [search, setSearch] = useState<string>('');
-  const [customers, setCustomers] = useState<Array<IUser> | null>([]);
+  const [customers, setCustomers] = useState<any>([]);
 
   const goBack = () => {
     navigation.goBack();
@@ -52,7 +53,7 @@ export default function AddCustomerScreen() {
     if (customersList && customersList.length > 0 && customers?.length === 0) {
       setCustomers(customersList);
     }
-  }, [customersList]);
+  }, []);
 
   useEffect(() => {
     if (customersError && customersError.length > 0) {
@@ -71,6 +72,20 @@ export default function AddCustomerScreen() {
       setCustomers(customersList);
     }
   }, [search]);
+
+  const handleAddCustomer = async (item: IUser) => {
+    if (user) {
+      let res = await addCustomer({user_id: user.id, relevant_id: item.id});
+      if (res.message){
+        dispatch(fetchListShopkeeperCustomerRequest({user_id: user.id}));  
+        dispatch(fetchListCustomerRequest({user_id: user.id}));
+        goBack(); 
+      } else if (res.error) {
+        console.log("res.error",res.error);
+        
+      }
+    }
+  }
 
   const RenderedItemsData = ({ item, index }) => {
     return (
@@ -127,7 +142,7 @@ export default function AddCustomerScreen() {
             justifyContent: 'center',
           }}
         >
-          <TouchableOpacity onPress={() => {}} style={{ marginRight: '14%' }}>
+          <TouchableOpacity onPress={() => handleAddCustomer(item)} style={{ marginRight: '14%' }}>
             <MaterialCommunityIcons name="check" color="green" size={30} />
           </TouchableOpacity>
         </View>
