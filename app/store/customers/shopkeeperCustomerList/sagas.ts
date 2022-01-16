@@ -11,7 +11,7 @@ import {
 } from './types';
 
 const ListShopkeeperCustomers = (body: requestListShopkeeperCustomer) =>
-  axios.post<responseUserLogin>( 'user/shopkeeper/customers/list', body);
+  axios.post<responseUserLogin>( 'user/list/relevent/users', body);
 
 function* fetchListShopkeeperCustomersSaga(action: FetchListShopkeeperCustomerRequest): any {
   try {

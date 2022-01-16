@@ -385,13 +385,14 @@ export default function AddProductScreen({
     if (isEdit === true) {
       setUpdatePending(true);
       data['product_id'] = form.product_id;
-      setVisible(true);
       const res = await updateProduct(data);
       if (res.message) {
+        setVisible(true);
         dispatch(fetchProductsListRequest({ user_id: user && user.id }));
         setUpdatePending(false);
         setMessage(res.message);
       } else if (res.error) {
+        setVisible(true);
         setMessage(res.error);
         setUpdatePending(false);
       }
@@ -553,6 +554,7 @@ export default function AddProductScreen({
                   placeholder="Quantity"
                   style={styles.inputField}
                   keyboardType="decimal-pad"
+                  maxLength={4}
                 />
               </View>
               <View
@@ -592,6 +594,7 @@ export default function AddProductScreen({
                 placeholder="Price"
                 style={styles.inputField}
                 keyboardType="decimal-pad"
+                maxLength={8}
               />
             </View>
           </View>

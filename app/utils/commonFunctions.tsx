@@ -1,3 +1,6 @@
+import React from 'react';
+import { Text, View } from 'react-native';
+
 export function Config() {
   const ENV_NAME = 'development' as 'development' | 'production';
   if (ENV_NAME === 'production') {
@@ -14,3 +17,21 @@ export function Config() {
     };
   }
 }
+
+export const EmptyContainer = () => (
+  <View
+    style={{
+      borderWidth: 0.5,
+      borderRadius: 10,
+      marginHorizontal: '1%',
+      marginVertical: '5%',
+      height: 500,
+      backgroundColor: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <Text>Ooops! No Data to Display.</Text>
+  </View>
+);

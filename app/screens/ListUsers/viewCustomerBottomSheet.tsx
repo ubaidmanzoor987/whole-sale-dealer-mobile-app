@@ -25,7 +25,6 @@ interface Props {
 }
 
 const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
- 
   const [form, setForm] = useState<any>(() => ({
     user_name: '',
     shop_name: '',
@@ -48,12 +47,7 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
     imageb64: '',
   }));
 
-  // useEffect(()=>{
-  //   console.log(_, '____');
-    
-  // },[_])
-
-  useEffect(()=>{
+  useEffect(() => {
     const data = {
       user_name: _.row.user_name,
       shop_name: _.row.shop_name,
@@ -76,49 +70,41 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
       imageb64: _.row.imageb64,
     } as any;
     setForm(data);
+  }, [_]);
 
-    // console.log(_.row ,'y row');
-    
-  },[_])
- 
   return (
     <>
       <Modalize ref={ref} modalHeight={Dimensions.get('screen').height / 1.2}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.titleContainer}>
-            <Text style={styles.titleWelcomeText}>
-              {form.user_name}
-            </Text>
-            <Text style={styles.titleSignText}>
-              {form.email}
-            </Text>
+            <Text style={styles.titleWelcomeText}>{form.user_name}</Text>
+            <Text style={styles.titleSignText}>{form.email}</Text>
           </View>
           <View style={styles.fieldsView}>
-              {form.image && form.image.uri && form.image.base64 ? (
-                <Image
-                  style={{
-                    width: 150,
-                    height: 150,
-                    resizeMode: 'contain',
-                    borderWidth: 1,
-                    borderColor: 'lightgrey',
-                  }}
-                  source={{ uri: form.image.uri }}
-                />
-              ) : (
-                <Image
-                  style={{
-                    width: 150,
-                    height: 150,
-                    borderRadius: 150 / 2,
-                    overflow: "hidden",
-                    borderWidth: 3,
-                    borderColor: "lightgrey"
-                  }}
-                  source={require('@app/assets/images/sampleImage.png')}
-                />
-              )}
-            
+            {form.image && form.image.uri && form.image.base64 ? (
+              <Image
+                style={{
+                  width: 150,
+                  height: 150,
+                  resizeMode: 'contain',
+                  borderWidth: 1,
+                  borderColor: 'lightgrey',
+                }}
+                source={{ uri: form.image.uri }}
+              />
+            ) : (
+              <Image
+                style={{
+                  width: 150,
+                  height: 150,
+                  borderRadius: 150 / 2,
+                  overflow: 'hidden',
+                  borderWidth: 3,
+                  borderColor: 'lightgrey',
+                }}
+                source={require('@app/assets/images/sampleImage.png')}
+              />
+            )}
           </View>
           <KeyboardAwareScrollView>
             <View style={styles.fieldsView}>
@@ -164,7 +150,9 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                   }}
                 >
                   <TextInputNative
-                    onChangeText={(e) => setForm(() => ({ ...form, shop_name: e }))}
+                    onChangeText={(e) =>
+                      setForm(() => ({ ...form, shop_name: e }))
+                    }
                     placeholder="Enter Name"
                     style={{ width: '80%', marginLeft: '5%' }}
                     maxLength={50}
@@ -240,7 +228,9 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                   }}
                 >
                   <TextInputNative
-                    onChangeText={(e) => setForm(() => ({ ...form, address: e }))}
+                    onChangeText={(e) =>
+                      setForm(() => ({ ...form, address: e }))
+                    }
                     placeholder="Enter Your Address"
                     style={{ width: '80%', marginLeft: '5%' }}
                     multiline={true}

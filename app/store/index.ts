@@ -14,32 +14,6 @@ const sagaMiddleware = createSagaMiddleware();
 // const store = createStore(rootReducer, applyMiddleware(sagaMiddleware, logger));
 const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
 
-// store.subscribe(()=>{
-//     console.log(store.getState(), 'current state');
-// });
-
-// Run the saga
 sagaMiddleware.run(rootSaga);
 
-// const getAsyncStorage = () => {
-//     return (dispatch)=>{
-//         AsyncStorage.getItem('user')
-//         .then(res=>{
-//             if(res){
-//                 let user = JSON.parse(res);
-//                 dispatch(userAutoLogin(user));
-//             }
-//         })
-//     }
-// }
-// store.dispatch(getAsyncStorage());
-// AsyncStorage.getItem('user')
-// .then(res=>{
-//     if(res){
-//         let user = JSON.parse(res) as any;
-//         console.log('store disatch', user);
-        
-//         store.dispatch(userAutoLogin(user))
-//     }
-// })
 export default store;

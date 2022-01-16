@@ -21,10 +21,10 @@ import {
 import { IProducts } from '@app/store/products/listProducts/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import ProductBottomSheet from './customer/editViewproductBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { fetchProductsListRequest } from '@app/store/products/listProducts/actions';
 import { ENV_VAR } from '@app/utils/environments';
+import { EmptyContainer } from '@app/utils/commonFunctions';
 
 interface Props {
   rows?: any;
@@ -59,74 +59,10 @@ function ProductScreen() {
   const onDismissSnackBar = () => setVisible(false);
 
   useEffect(() => {
-    if (user && user.id) {
+    if (user && user.id && productsData.length === 0) {
       dispatch(fetchProductsListRequest({ user_id: user.id }));
     }
-  }, [user]);
-
-
-  const products = [
-    {
-      product_id: 1,
-      product_name: 'product_name',
-      image1: 'image1',
-      image2: 'image2',
-      image3: 'image3',
-      price: 'price',
-      quantities: 'quantities',
-      product_des: 'product_des',
-      brand_id: 'brand_id',
-      user_id: 'user_id',
-    },
-    {
-      product_id: 2,
-      product_name: 'product_name',
-      image1: 'image1',
-      image2: 'image2',
-      image3: 'image3',
-      price: 'price',
-      quantities: 'quantities',
-      product_des: 'product_des',
-      brand_id: 'brand_id',
-      user_id: 'user_id',
-    },
-    {
-      product_id: 'product_id3',
-      product_name: 'product_name',
-      image1: 'image1',
-      image2: 'image2',
-      image3: 'image3',
-      price: 'price',
-      quantities: 'quantities',
-      product_des: 'product_des',
-      brand_id: 'brand_id',
-      user_id: 'user_id',
-    },
-    {
-      product_id: 'product_id4',
-      product_name: 'product_name',
-      image1: 'image1',
-      image2: 'image2',
-      image3: 'image3',
-      price: 'price',
-      quantities: 'quantities',
-      product_des: 'product_des',
-      brand_id: 'brand_id',
-      user_id: 'user_id',
-    },
-    {
-      product_id: 'product_id5',
-      product_name: 'product_name',
-      image1: 'image1',
-      image2: 'image2',
-      image3: 'image3',
-      price: 'price',
-      quantities: 'quantities',
-      product_des: 'product_des',
-      brand_id: 'brand_id',
-      user_id: 'user_id',
-    },
-  ];
+  }, [dispatch, user, productsData]);
 
   const cols = [
     {
@@ -182,12 +118,12 @@ function ProductScreen() {
   );
 
   const navigateToAddProducts = () => {
-    navigation.navigate('AddEditProductScreen', {isEdit: true, row: null});
+    navigation.navigate('AddEditProductScreen', { isEdit: true, row: null });
   };
 
   const openViewEditBrandSheet = (row: any) => {
     // productsBottomSheetRef.current.open();
-    navigation.navigate("AddEditProductScreen", {isEdit: true, row })
+    navigation.navigate('AddEditProductScreen', { isEdit: true, row });
   };
 
   const handleClose = (row: any) => {
@@ -241,7 +177,7 @@ function ProductScreen() {
               padding: 5,
             }}
           >
-            <TouchableOpacity onPress={()=>openViewEditBrandSheet(product)}>
+            <TouchableOpacity onPress={() => openViewEditBrandSheet(product)}>
               <Text>View | Edit</Text>
             </TouchableOpacity>
           </View>
@@ -250,31 +186,59 @@ function ProductScreen() {
     );
   };
 
+  const refetchProducts = () => {
+    if (user && user.id) {
+      dispatch(fetchProductsListRequest({ user_id: user.id }));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.titleWelcomeText}>Products</Text>
         <Text style={styles.titleSignText}>List of all products</Text>
       </View>
-      <TouchableOpacity
-        style={styles.addBrandTouchable}
-        onPress={navigateToAddProducts}
+      <View
+        style={{
+          display: 'flex',
+          width: '100%',
+          flexDirection: 'row',
+          marginTop: '4%',
+          marginLeft: '1%',
+        }}
       >
-        <MaterialCommunityIcons
-          name="plus-box"
-          color="black"
-          size={20}
-          style={{ marginRight: '2%' }}
-        />
-        <Text
+        <View style={{ width: '70%' }}>
+          <TouchableOpacity
+            style={styles.addBrandTouchable}
+            onPress={navigateToAddProducts}
+          >
+            <MaterialCommunityIcons
+              name="plus-box"
+              color="black"
+              size={20}
+              style={{ marginRight: '2%' }}
+            />
+            <Text
+              style={{
+                color: 'black',
+              }}
+            >
+              Add Product
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          onPress={refetchProducts}
           style={{
-            color: 'black',
+            alignItems: 'flex-end',
+            width: '25%',
+            justifyContent: 'flex-end',
           }}
         >
-          Add Product
-        </Text>
-      </TouchableOpacity>
-
+          <MaterialCommunityIcons name="reload" size={24} color={'black'} />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={productsData}
         style={styles.flatListContainer}
@@ -282,21 +246,19 @@ function ProductScreen() {
         ListHeaderComponent={tableHeader}
         stickyHeaderIndices={[0]}
         ListFooterComponent={
-          productsPending ? <ActivityIndicator size="large" color="#27428B" /> : <></>
+          productsPending ? (
+            <ActivityIndicator size="large" color="#27428B" />
+          ) : (
+            <></>
+          )
         }
         ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
+        ListEmptyComponent={EmptyContainer}
         renderItem={({ item, index }) => (
           <RenderedItemsData product={item} index={index} />
         )}
       />
 
-      <ProductBottomSheet
-        ref={productsBottomSheetRef}
-        navigation={navigation}
-        closeSheet={handleClose}
-        row={row}
-        isEdit={isEdit}
-      />
       <Snackbar
         visible={visible}
         onDismiss={onDismissSnackBar}
@@ -385,15 +347,15 @@ const styles = StyleSheet.create({
     marginTop: '-100%',
   },
   addBrandTouchable: {
-    marginTop: '5%',
     marginLeft: '1%',
-    width: '40%',
-    height: '5%',
+    width: '60%',
     borderRadius: 10,
     borderWidth: 1,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: '2%',
+    backgroundColor: 'white',
   },
 });

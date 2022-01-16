@@ -21,11 +21,10 @@ import {
 import { fetchBrandListRequest } from '@app/store/brands/listBrands/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
-import { getDataSelector as getBrandSelector } from '@app/store/brands/addBrand/selector';
 import AddBrandBottomSheet from './addEditBrandBottomSheet';
 import { useNavigation } from '@react-navigation/native';
-import { fetchBrandCreateClear } from '@app/store/brands/addBrand/actions';
 import { deleteBrand } from '@app/utils/apis';
+import { EmptyContainer } from '@app/utils/commonFunctions';
 
 interface Props {
   rows?: any;
@@ -250,6 +249,7 @@ function TableWidget(props: Props) {
         renderItem={({ item, index }) => (
           <RenderedItemsData item={item} index={index} />
         )}
+        ListEmptyComponent={EmptyContainer}
       />
 
       <AddBrandBottomSheet

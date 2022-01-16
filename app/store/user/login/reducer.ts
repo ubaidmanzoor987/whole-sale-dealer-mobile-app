@@ -35,7 +35,6 @@ export default (state = initialState, action: UserActions): userLoginState => {
         error: action.payload.response.error,
       };
     case actions.User_Auto_Login:
-      // console.log("res reducer", action);
       return {
         ...state,
         data: action.payload as any,

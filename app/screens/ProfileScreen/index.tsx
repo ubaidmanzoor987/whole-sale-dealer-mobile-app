@@ -164,9 +164,6 @@ export default function ProfileScreen() {
     setOpenCameraModal(true);
   };
 
-  console.log("user", form);
-  
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleContainer}>

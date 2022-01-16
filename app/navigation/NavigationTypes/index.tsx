@@ -18,7 +18,11 @@ export type BottomTabParamList = {
   Products: undefined;
   Brands: undefined;
   Profile: undefined;
-  Customer: undefined;
+  Customers: undefined;
+  Shopkeepers: undefined;
+  CustomerProduct: undefined;
+  Favourites: undefined;
+  Cart: undefined;
 };
 
 export type BrandStacksList = {
@@ -40,8 +44,20 @@ export type ProfileStacksList = {
   ProfileScreen: undefined;
 };
 
-export type CustomerStacksList = {
-  CustomerSceen: undefined;
-  AddCustomerScreen: undefined;
+export type UserStacksList = {
+  UserSceen: undefined;
+  AddUserScreen: undefined;
 };
+
+export type ProductsCustomerStacksList = {
+  CustomerProductScreen: undefined;
+}
+
+export type FavouritesStacksList = {
+  FavouritesScreen: undefined;
+}
+
+export type CartStacksList = {
+  CartScreen: undefined;
+}
 

@@ -17,6 +17,7 @@ export interface IUser {
   token: string;
   imageb64: string;
   expo_push_token: string;
+  user_type: string;
 }
 
 export interface requestUserLogin {

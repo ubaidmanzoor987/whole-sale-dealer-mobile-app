@@ -53,11 +53,13 @@ function Customers() {
   const user = useSelector(getUserSelector);
   const onDismissSnackBar = () => setVisible(false);
 
-  useEffect(()=>{
-    if(customerList && customerList.length == 0){
-      dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
+  useEffect(() => {
+    if (customerList && customerList.length == 0) {
+      dispatch(
+        fetchListShopkeeperCustomerRequest({ user_id: user && user.id })
+      );
     }
-  }, [])
+  }, []);
 
   const cols = [
     {
@@ -114,22 +116,15 @@ function Customers() {
     </View>
   );
 
-  const openAddBrandSheet = () => {
-    // setRow({});
-    setIsEdit(false);
-    viewCustomerBottomSheet.current.open();
-  };
-
   const openAddCustomerScreen = () => {
-    navigation.navigate('AddCustomerScreen', {});
-  }
+    navigation.navigate('AddUserScreen', {});
+  };
 
   const handleClose = (row: any) => {
     viewCustomerBottomSheet.current.close();
   };
 
   const handleDelete = (itemData: renderProps) => {
-    console.log(itemData);
     Alert.alert('Warning', 'Are you sure You want to delete!', [
       {
         text: 'Cancel',
@@ -145,8 +140,10 @@ function Customers() {
           };
           const res = await removeCustomer(req);
           if (res.message) {
-            dispatch(fetchListShopkeeperCustomerRequest({ user_id: user && user.id }));
-            dispatch(fetchListCustomerRequest({user_id: user && user.id}));
+            dispatch(
+              fetchListShopkeeperCustomerRequest({ user_id: user && user.id })
+            );
+            dispatch(fetchListCustomerRequest({ user_id: user && user.id }));
             setVisible(true);
             setMessage(res.message);
           } else if (res.error) {
@@ -167,7 +164,6 @@ function Customers() {
   };
 
   const RenderedItemsData = (itemData: renderProps) => {
-    console.log("itemData", itemData);
     return (
       <TouchableWithoutFeedback>
         <View
@@ -178,7 +174,9 @@ function Customers() {
         >
           <Text style={styles.columnRowTxt}>{itemData.item.user_name}</Text>
           <Text style={styles.columnRowTxt}>
-            {itemData.item.owner_phone_no ? itemData.item.owner_phone_no : 'N/A'}
+            {itemData.item.owner_phone_no
+              ? itemData.item.owner_phone_no
+              : 'N/A'}
           </Text>
           <View
             style={{
@@ -195,11 +193,7 @@ function Customers() {
                 handleEditClick(itemData);
               }}
             >
-              <MaterialCommunityIcons
-                name="eye"
-                size={20}
-                color={'#5460E0'}
-              />
+              <MaterialCommunityIcons name="eye" size={20} color={'#5460E0'} />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => handleDelete(itemData)}>
@@ -216,13 +210,16 @@ function Customers() {
     );
   };
 
-  // console.log('brands', brands, user);
-
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.titleWelcomeText}>Customers</Text>
-        <Text style={styles.titleSignText}>List of Your Customers</Text>
+        <Text style={styles.titleWelcomeText}>
+          {user?.user_type === 'shop_keeper' ? 'Customers' : 'Shop Keepers'}
+        </Text>
+        <Text style={styles.titleSignText}>
+          List of your{' '}
+          {user?.user_type === 'shop_keeper' ? 'customers' : 'shop Keepers'}
+        </Text>
       </View>
       <TouchableOpacity
         style={styles.addBrandTouchable}
@@ -239,7 +236,7 @@ function Customers() {
             color: 'black',
           }}
         >
-          Add Customers
+          Add {user?.user_type === 'shop_keeper' ? 'Customers' : 'Shop Keepers'}
         </Text>
       </TouchableOpacity>
       <FlatList

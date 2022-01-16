@@ -23,14 +23,7 @@ export interface IProducts {
 }
 
 export interface requestProducts {
-  user_id: number | null;
-}
-
-export interface responseProducts {
-  success: boolean;
-  message: string;
-  data: IProducts[] | [];
-  error: string | null | any;
+  data: IProducts[];
 }
 
 export interface ProductsState {
@@ -42,26 +35,26 @@ export interface ProductsState {
 }
 
 export interface FetchProductsResponsePayload {
-  response: responseProducts;
+  response: IProducts[];
 }
 
 export interface FetchProductsRequest {
-  type: typeof actionTypes.Fetch_Products_List_Request;
+  type: typeof actionTypes.Fetch_Products_Cart_Request;
   payload: requestProducts;
 }
 
 export type FetchProductsSuccess = {
-  type: typeof actionTypes.Fetch_Products_List_Success;
+  type: typeof actionTypes.Fetch_Products_Cart_Success;
   payload: FetchProductsResponsePayload;
 };
 
 export type FetchProductsFailure = {
-  type: typeof actionTypes.Fetch_Products_List_Failure;
+  type: typeof actionTypes.Fetch_Products_Cart_Failure;
   payload: FetchProductsResponsePayload;
 };
 
 export type FetchProductsClear = {
-  type: typeof actionTypes.Fetch_Products_List_Clear;
+  type: typeof actionTypes.Fetch_Products_Cart_Clear;
 };
 
 export type ProductsActions =

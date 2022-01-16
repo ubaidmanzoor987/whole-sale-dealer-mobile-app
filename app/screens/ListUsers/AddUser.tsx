@@ -12,6 +12,7 @@ import {
   ScrollView,
   TextInput as TextInputNative,
   Image,
+  Alert,
 } from 'react-native';
 import _ from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,7 +28,7 @@ import { addCustomer } from '@app/utils/apis';
 import { IUser } from '@app/store/user/login/types';
 import { fetchListShopkeeperCustomerRequest } from '@app/store/customers/shopkeeperCustomerList/actions';
 
-export default function AddCustomerScreen() {
+export default function AddUserScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const user = useSelector(getUserSelector);
@@ -82,7 +83,6 @@ export default function AddCustomerScreen() {
         goBack(); 
       } else if (res.error) {
         console.log("res.error",res.error);
-        
       }
     }
   }
