@@ -21,7 +21,7 @@ export default function ExpoNotification() {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
   useEffect(() => {
-    if (user && user.id && Token === '' && !user.expo_push_token) {
+    if (user && user.id && Token === '') {
       registerForPushNotificationsAsync().then(async (token) => {
         setToken(token);
         const res = await expoPushToken({

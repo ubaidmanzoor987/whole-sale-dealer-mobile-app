@@ -144,20 +144,18 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    if (user && user.id) {
-      const res = await logoutUser({ user_id: user.id });
-      if (res.message) {
-        AsyncStorage.removeItem('user');
-        dispatch(fetchUserLoginClear());
-        setVisible(true);
-        setMessage(res.message);
-        navigation.navigate('Root');
-      } else if (res.error) {
-        setVisible(true);
-        setMessage(res.message);
-        setIsError(true);
-      }
+    const res = await logoutUser({ user_id: user && user.id });
+    AsyncStorage.removeItem('user');
+    dispatch(fetchUserLoginClear());
+    if (res.message) {
+      setVisible(true);
+      setMessage(res.message);
+    } else if (res.error) {
+      setVisible(true);
+      setMessage(res.message);
+      setIsError(true);
     }
+    navigation.navigate('Root');
   };
 
   const showCameraModal = () => {

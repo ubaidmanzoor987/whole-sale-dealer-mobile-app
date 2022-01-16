@@ -114,7 +114,6 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
       }
     };
 
-    console.log('_', _.row?.user_name_shopkeeper);
     useEffect(() => {
       const { row } = _;
       if (row) {

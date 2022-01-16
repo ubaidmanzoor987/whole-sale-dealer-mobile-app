@@ -59,10 +59,8 @@ function ProductScreen() {
   const onDismissSnackBar = () => setVisible(false);
 
   useEffect(() => {
-    if (user && user.id && productsData.length === 0) {
-      dispatch(fetchProductsListRequest({ user_id: user.id }));
-    }
-  }, [dispatch, user, productsData]);
+    dispatch(fetchProductsListRequest({ user_id: user && user.id }));
+  }, [user]);
 
   const cols = [
     {

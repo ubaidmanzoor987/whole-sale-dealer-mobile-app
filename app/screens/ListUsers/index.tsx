@@ -24,6 +24,7 @@ import ViewCustomerBottomSheet from './viewCustomerBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { removeCustomer } from '@app/utils/apis';
 import { fetchListCustomerRequest } from '@app/store/customers/list/actions';
+import { EmptyContainer } from '@app/utils/commonFunctions';
 
 interface Props {
   rows?: any;
@@ -252,6 +253,7 @@ function Customers() {
         renderItem={({ item, index }) => (
           <RenderedItemsData item={item} index={index} />
         )}
+        ListEmptyComponent={EmptyContainer}
       />
 
       <ViewCustomerBottomSheet

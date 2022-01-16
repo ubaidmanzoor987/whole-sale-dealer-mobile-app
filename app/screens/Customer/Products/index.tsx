@@ -19,10 +19,10 @@ export function CustomerProductsScreen() {
   const user = useSelector(getUserSelector);
 
   useEffect(() => {
-    if (user && user.id && productsData.length === 0) {
+    if (user && user.id) {
       dispatch(fetchProductsListRequest({ user_id: user.id }));
     }
-  }, [productsData]);
+  }, []);
 
   const refetchProducts = () => {
     if (user && user.id) {

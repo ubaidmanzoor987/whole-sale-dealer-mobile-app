@@ -24,7 +24,6 @@ import {
 } from '@app/store/user/register/selector';
 import { RootStackParamList } from '@app/navigation/NavigationTypes';
 import { Switch } from 'react-native-paper';
-import ToastScreen from '@app/screens/ToastScreen';
 
 function SignUpScreen({
   navigation,

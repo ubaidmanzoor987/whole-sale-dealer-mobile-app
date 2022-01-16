@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Text, View } from 'react-native';
 
@@ -32,6 +33,7 @@ export const EmptyContainer = () => (
       justifyContent: 'center',
     }}
   >
-    <Text>Ooops! No Data to Display.</Text>
+    <MaterialCommunityIcons name='recycle-variant' size={50} />
+    <Text>No Data to display</Text>
   </View>
 );
