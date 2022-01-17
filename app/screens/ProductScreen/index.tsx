@@ -251,7 +251,7 @@ function ProductScreen() {
           )
         }
         ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
-        ListEmptyComponent={EmptyContainer}
+        ListEmptyComponent={<EmptyContainer isLoading={productsPending} />}
         renderItem={({ item, index }) => (
           <RenderedItemsData product={item} index={index} />
         )}

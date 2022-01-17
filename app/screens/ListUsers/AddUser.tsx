@@ -27,6 +27,7 @@ import { ENV_VAR } from '@app/utils/environments';
 import { addCustomer } from '@app/utils/apis';
 import { IUser } from '@app/store/user/login/types';
 import { fetchListShopkeeperCustomerRequest } from '@app/store/customers/shopkeeperCustomerList/actions';
+import { EmptyContainer } from '@app/utils/commonFunctions';
 
 export default function AddUserScreen() {
   const navigation = useNavigation();
@@ -45,10 +46,10 @@ export default function AddUserScreen() {
   };
 
   useEffect(() => {
-    if (user && user.id && customersList && customersList.length == 0) {
+    if (user && user.id) {
       dispatch(fetchListCustomerRequest({ user_id: user.id }));
     }
-  }, [dispatch, user, customersList?.length === 0]);
+  }, []);
 
   useEffect(() => {
     if (customersList && customersList.length > 0 && customers?.length === 0) {
@@ -76,62 +77,59 @@ export default function AddUserScreen() {
 
   const handleAddCustomer = async (item: IUser) => {
     if (user) {
-      let res = await addCustomer({user_id: user.id, relevant_id: item.id});
-      if (res.message){
-        dispatch(fetchListShopkeeperCustomerRequest({user_id: user.id}));  
-        dispatch(fetchListCustomerRequest({user_id: user.id}));
-        goBack(); 
+      let res = await addCustomer({ user_id: user.id, relevant_id: item.id });
+      if (res.message) {
+        dispatch(fetchListShopkeeperCustomerRequest({ user_id: user.id }));
+        dispatch(fetchListCustomerRequest({ user_id: user.id }));
+        goBack();
       } else if (res.error) {
-        console.log("res.error",res.error);
+        console.log('res.error', res.error);
       }
     }
-  }
+  };
 
   const RenderedItemsData = ({ item, index }) => {
     return (
       <View
         style={{
-          borderBottomWidth: 1,
-          borderBottomColor: 'grey',
-          height: 140,
           display: 'flex',
           flexDirection: 'row',
+          marginTop: '4%',
+          borderBottomWidth: 0.5,
+          borderBottomColor: 'grey',
         }}
       >
         <View
           style={{
-            width: '15%',
+            width: '18%',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           {item.image ? (
             <Image
               source={{ uri: ENV_VAR.baseUrl + item.image }}
               style={{
-                width: 50,
-                height: 50,
+                width: 80,
+                height: 80,
                 borderRadius: 25,
               }}
             />
           ) : (
-            <MaterialCommunityIcons name="face-profile" size={50} />
+            <MaterialCommunityIcons name="face-profile" size={70} />
           )}
         </View>
         <View
           style={{
-            width: '70%',
+            width: '65%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
           }}
         >
-          <Text style={{ fontSize: 24 }}>{item.user_name?.toUpperCase()}</Text>
-          <Text>{item.shop_name}</Text>
-          <Text>{item.email}</Text>
-          <Text>Address: {item.address}</Text>
+          <Text style={{ fontSize: 20, marginTop: '3%' }}>
+            {item.owner_name?.toUpperCase()}
+          </Text>
+          <Text style={{ marginTop: '-7%' }}>Shop Name: {item.shop_name}</Text>
+          <Text>Email: {item.email}</Text>
         </View>
         <View
           style={{
@@ -142,7 +140,10 @@ export default function AddUserScreen() {
             justifyContent: 'center',
           }}
         >
-          <TouchableOpacity onPress={() => handleAddCustomer(item)} style={{ marginRight: '14%' }}>
+          <TouchableOpacity
+            onPress={() => handleAddCustomer(item)}
+            style={{ marginRight: '14%' }}
+          >
             <MaterialCommunityIcons name="check" color="green" size={30} />
           </TouchableOpacity>
         </View>
@@ -164,9 +165,13 @@ export default function AddUserScreen() {
               }}
             />
           </TouchableOpacity>
-          <Text style={styles.titleWelcomeText}>Add Customers</Text>
+          <Text style={styles.titleWelcomeText}>
+            Add {user?.user_type === 'shop_keeper' ? 'Customers' : 'Shop Keepers'}
+          </Text>
         </View>
-        <Text style={styles.titleSignText}>Find Your Customers</Text>
+        <Text style={styles.titleSignText}>
+        Find Your {user?.user_type === 'shop_keeper' ? 'Customers' : 'Shop Keepers'}
+        </Text>
       </View>
       <View style={styles.inputFieldsMainView}>
         <View
@@ -187,16 +192,23 @@ export default function AddUserScreen() {
           />
         </View>
       </View>
-      <ScrollView style={styles.flatListContainer}>
-        {customersPending && (
-          <View style={{ height: 200 }}>
-            <ActivityIndicator size={24} color="#5460E0" />
-          </View>
+      <FlatList
+        data={customersList}
+        style={styles.flatListContainer}
+        keyExtractor={(item, index) => index + ''}
+        ListFooterComponent={
+          customersPending ? (
+            <ActivityIndicator size="large" color="#27428B" />
+          ) : (
+            <></>
+          )
+        }
+        ListFooterComponentStyle={{ flexGrow: 1, paddingTop: '10%' }}
+        renderItem={({ item, index }) => (
+          <RenderedItemsData item={item} index={index} />
         )}
-        {customers?.map((item, index) => (
-          <RenderedItemsData item={item} index={index} key={item.id} />
-        ))}
-      </ScrollView>
+        ListEmptyComponent={<EmptyContainer isLoading={customersPending} />}
+      />
     </View>
   );
 }
@@ -230,11 +242,11 @@ const styles = StyleSheet.create({
     width: '98%',
     display: 'flex',
     alignSelf: 'center',
+    borderRadius: 20,
     marginTop: '2%',
     backgroundColor: 'white',
     borderColor: 'lightgrey',
     borderWidth: 1,
-    borderRadius: 20,
   },
   inputFieldsMainView: {
     width: '100%',

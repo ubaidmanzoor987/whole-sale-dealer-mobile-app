@@ -253,7 +253,7 @@ function Customers() {
         renderItem={({ item, index }) => (
           <RenderedItemsData item={item} index={index} />
         )}
-        ListEmptyComponent={EmptyContainer}
+        ListEmptyComponent={<EmptyContainer isLoading={isPending} />}
       />
 
       <ViewCustomerBottomSheet

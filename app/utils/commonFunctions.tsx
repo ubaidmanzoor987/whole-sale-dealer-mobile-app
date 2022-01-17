@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 export function Config() {
   const ENV_NAME = 'development' as 'development' | 'production';
@@ -19,7 +19,10 @@ export function Config() {
   }
 }
 
-export const EmptyContainer = () => (
+interface Props {
+  isLoading?: boolean;
+}
+export const EmptyContainer = ({ isLoading }: Props) => (
   <View
     style={{
       borderWidth: 0.5,
@@ -33,7 +36,13 @@ export const EmptyContainer = () => (
       justifyContent: 'center',
     }}
   >
-    <MaterialCommunityIcons name='recycle-variant' size={50} />
-    <Text>No Data to display</Text>
+    {isLoading === true ? (
+      <ActivityIndicator size="large" color="#27428B" />
+    ) : (
+      <>
+        <MaterialCommunityIcons name="recycle-variant" size={50} />
+        <Text>No Data to display</Text>
+      </>
+    )}
   </View>
 );

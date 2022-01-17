@@ -29,6 +29,7 @@ interface Props {
   showFavourite?: boolean;
   isFavorite?: boolean;
   isCart?: boolean;
+  isProduct?: boolean;
 }
 
 interface renderProps {
@@ -47,6 +48,7 @@ function CommonScreen({
   showFavourite,
   isCart,
   isFavorite,
+  isProduct,
 }: Props) {
   const dispatch = useDispatch();
   const productsDetailBottomSheetRef = useRef() as any;
@@ -96,23 +98,19 @@ function CommonScreen({
       return 'heart-outline';
     }
     return 'heart';
-
   };
 
   const getRight = (product: IProducts) => {
-    if (showFavourite === true) {
-      return (
-        <MaterialCommunityIcons
-          onPress={() => {
-            onPressFavroites(product);
-          }}
-          name={getFavoritesIcon(product)}
-          size={24}
-          style={{ marginRight: '5%', color: 'red' }}
-        />
-      );
-    }
-    <></>;
+    return (
+      <MaterialCommunityIcons
+        onPress={() => {
+          onPressFavroites(product);
+        }}
+        name={getFavoritesIcon(product)}
+        size={24}
+        style={{ marginRight: '5%', color: 'red' }}
+      />
+    );
   };
 
   const RenderedItemsData = ({ product }: renderProps) => {
@@ -167,36 +165,38 @@ function CommonScreen({
         <Text style={styles.titleWelcomeText}>{title}</Text>
         <Text style={styles.titleSignText}>{subtitle}</Text>
       </View>
-      <View
-        style={{
-          display: 'flex',
-          width: '100%',
-          flexDirection: 'row',
-          marginTop: '4%',
-          marginLeft: '1%',
-        }}
-      >
-        <View style={{ width: '70%' }}>
-          <TouchableOpacity
-            style={styles.addBrandTouchable}
-            onPress={handleRefetchProducts}
-          >
-            <Text
-              style={{
-                color: 'black',
-              }}
+      {isProduct === true && (
+        <View
+          style={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            marginTop: '4%',
+            marginLeft: '1%',
+          }}
+        >
+          <View style={{ width: '70%' }}>
+            <TouchableOpacity
+              style={styles.addBrandTouchable}
+              onPress={handleRefetchProducts}
             >
-              Refresh
-            </Text>
-            <MaterialCommunityIcons
-              name="reload"
-              color="black"
-              size={20}
-              style={{ marginLeft: '2%' }}
-            />
-          </TouchableOpacity>
+              <Text
+                style={{
+                  color: 'black',
+                }}
+              >
+                Refresh
+              </Text>
+              <MaterialCommunityIcons
+                name="reload"
+                color="black"
+                size={20}
+                style={{ marginLeft: '2%' }}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
       <FlatList
         data={data}
         style={styles.flatListContainer}
