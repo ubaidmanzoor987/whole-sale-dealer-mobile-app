@@ -15,6 +15,8 @@ import { ImageResult } from 'expo-image-manipulator';
 import Constants from 'expo-constants';
 import { useDispatch } from 'react-redux';
 import { fetchProductsCartRequest } from '@app/store/products/cart/actions';
+import { useNavigation } from '@react-navigation/native';
+import { Switch } from 'react-native-paper';
 
 interface Props {
   ref: React.Ref<any>;
@@ -22,6 +24,7 @@ interface Props {
   closeSheet?: any;
   row?: IProducts;
   isCart?: boolean;
+  isOrder?: boolean;
 }
 
 interface IForm {
@@ -32,6 +35,9 @@ interface IForm {
 
 const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
   (_, ref) => {
+    const [isSwitchOn, setIsSwitchOn] = useState(false);
+
+    const navigation = useNavigation();
     const dispatch = useDispatch();
     const [previewImage, setPreviewImage] = React.useState<ImageResult>();
     const [cartProducts, setCartProducts] = React.useState<Array<IProducts>>(
@@ -151,6 +157,9 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
         dispatch(fetchProductsCartRequest({ data: cartProducts }));
       }
     }, [dispatch, cartProducts]);
+    const onToggleSwitch = () => {
+      setIsSwitchOn(!isSwitchOn);
+    };
 
     return (
       <>
@@ -373,34 +382,78 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                   </View>
                 )}
                 {_.isCart === true && (
-                  <View
-                    style={{
-                      ...styles.inputFieldsMainView,
-                      marginVertical: '5%',
-                    }}
-                  >
-                    <View style={styles.addToCartButtonView}>
-                      <TouchableOpacity style={styles.addToCartButton}>
-                        <Text
-                          style={{
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: 20,
-                            fontStyle: 'italic',
-                            marginRight: 10,
-                            textTransform: 'none',
-                            paddingRight: 10,
-                          }}
+                  <>
+                    <View
+                      style={{
+                        ...styles.inputFieldsMainView,
+                        marginVertical: '2%',
+                      }}
+                    >
+                      <View style={styles.addToCartButtonView}>
+                        <TouchableOpacity
+                          style={styles.addToCartButton}
+                          onPress={() => navigation.navigate('CheckoutScreen')}
                         >
-                          Remove From Cart{' '}
-                        </Text>
-                        <MaterialCommunityIcons
-                          name="cart"
-                          size={20}
-                          color={'white'}
-                        />
-                      </TouchableOpacity>
+                          <Text
+                            style={{
+                              color: 'white',
+                              fontWeight: 'bold',
+                              fontSize: 20,
+                              fontStyle: 'italic',
+                              marginRight: 10,
+                              textTransform: 'none',
+                              paddingRight: 10,
+                            }}
+                          >
+                            Proceed to checkout{' '}
+                          </Text>
+                          <MaterialCommunityIcons
+                            name="cart"
+                            size={20}
+                            color={'white'}
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </View>
+                    <View
+                      style={{
+                        ...styles.inputFieldsMainView,
+                        marginVertical: '2%',
+                      }}
+                    >
+                      <View style={styles.addToCartButtonView}>
+                        <TouchableOpacity style={styles.addToCartButton}>
+                          <Text
+                            style={{
+                              color: 'white',
+                              fontWeight: 'bold',
+                              fontSize: 20,
+                              fontStyle: 'italic',
+                              marginRight: 10,
+                              textTransform: 'none',
+                              paddingRight: 10,
+                            }}
+                          >
+                            Remove From Cart{' '}
+                          </Text>
+                          <MaterialCommunityIcons
+                            name="cart"
+                            size={20}
+                            color={'white'}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </>
+                )}
+                {_.isOrder === true && (
+                  <View style={styles.statusView}>
+                    <Text style={styles.statusViewText}>Order Complete</Text>
+                    <Switch
+                      value={isSwitchOn}
+                      onValueChange={onToggleSwitch}
+                      thumbColor="#5460E0"
+                    />
                   </View>
                 )}
               </View>
@@ -524,5 +577,18 @@ const styles = StyleSheet.create({
     borderRightWidth: 0.5,
     borderTopEndRadius: 10,
     borderLeftWidth: 0.5,
+  },
+  statusView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '85%',
+    backgroundColor: 'transparent',
+    marginTop: '2.5%',
+  },
+  statusViewText: {
+    flex: 1,
+    paddingTop: '1%',
+    color: 'grey',
+    fontSize: 15,
   },
 });

@@ -9,6 +9,7 @@ import addProductReducer from './products/addProduct/reducer';
 import listProductReducer from './products/listProducts/reducer';
 import favoritesProductReducer from './products/favourites/reducer';
 import cartProductReducer from './products/cart/reducer';
+import orderProductReducer from './products/order/reducer';
 import listCustomerReducer from './customers/list/reducer';
 import listShopkeeperCustomers from './customers/shopkeeperCustomerList/reducer'
 
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   shopkeeperCustomersList: listShopkeeperCustomers,
   favourites: favoritesProductReducer,
   cart: cartProductReducer,
+  order: orderProductReducer
 });
 
 export type AppState = ReturnType<typeof rootReducer>;

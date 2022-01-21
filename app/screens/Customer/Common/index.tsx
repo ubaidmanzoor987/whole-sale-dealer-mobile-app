@@ -30,6 +30,7 @@ interface Props {
   isFavorite?: boolean;
   isCart?: boolean;
   isProduct?: boolean;
+  isOrder?: boolean;
 }
 
 interface renderProps {
@@ -49,6 +50,7 @@ function CommonScreen({
   isCart,
   isFavorite,
   isProduct,
+  isOrder,
 }: Props) {
   const dispatch = useDispatch();
   const productsDetailBottomSheetRef = useRef() as any;
@@ -101,16 +103,17 @@ function CommonScreen({
   };
 
   const getRight = (product: IProducts) => {
-    return (
-      <MaterialCommunityIcons
-        onPress={() => {
-          onPressFavroites(product);
-        }}
-        name={getFavoritesIcon(product)}
-        size={24}
-        style={{ marginRight: '5%', color: 'red' }}
-      />
-    );
+    if (showFavourite)
+      return (
+        <MaterialCommunityIcons
+          onPress={() => {
+            onPressFavroites(product);
+          }}
+          name={getFavoritesIcon(product)}
+          size={24}
+          style={{ marginRight: '5%', color: 'red' }}
+        />
+      );
   };
 
   const RenderedItemsData = ({ product }: renderProps) => {
@@ -147,6 +150,7 @@ function CommonScreen({
             <Text style={{ color: 'lightgreen' }}>
               A Product By {product.user_shop_name}
             </Text>
+            {isOrder && <Text style={{ color: 'blue' }}>Status: Pending</Text>}
           </Card.Content>
         </Card>
       </TouchableWithoutFeedback>
@@ -216,6 +220,7 @@ function CommonScreen({
         closeSheet={handleClose}
         row={row}
         isCart={isCart}
+        isOrder={isOrder}
       />
     </View>
   );

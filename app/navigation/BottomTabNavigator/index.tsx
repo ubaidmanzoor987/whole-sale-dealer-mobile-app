@@ -17,6 +17,7 @@ import {
   ProductsCustomerStacksList,
   FavouritesStacksList,
   CartStacksList,
+  OrderStacksList,
 } from '../NavigationTypes';
 import ProfileScreen from '@app/screens/ProfileScreen';
 import UserScreen from '@app/screens/ListUsers';
@@ -25,6 +26,8 @@ import {
   FavouritesScreen,
   CustomerProductsScreen,
   CartScreen,
+  CheckoutScreen,
+  OrdersScreen
 } from '@app/screens/Customer/index';
 
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
@@ -102,7 +105,15 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-
+      <BottomTab.Screen
+        name="Orders"
+        component={OrderNavigator}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="archive-outline" color={color} />
+          ),
+        }}
+      />
       <BottomTab.Screen
         name="Profile"
         component={ProfileNavigator}
@@ -128,6 +139,7 @@ const UserStack = createStackNavigator<UserStacksList>();
 const CustomerProductStack = createStackNavigator<ProductsCustomerStacksList>();
 const FavouritesStack = createStackNavigator<FavouritesStacksList>();
 const CartStack = createStackNavigator<CartStacksList>();
+const OrderStack = createStackNavigator<OrderStacksList>();
 
 function BrandNavigator() {
   return (
@@ -192,6 +204,16 @@ function CartNavigator() {
   return (
     <CartStack.Navigator screenOptions={{ headerShown: false }}>
       <CartStack.Screen name="CartScreen" component={CartScreen} />
+      <CartStack.Screen name="CheckoutScreen" component={CheckoutScreen} />
     </CartStack.Navigator>
+  );
+}
+
+function OrderNavigator() {
+  return (
+    <OrderStack.Navigator screenOptions={{ headerShown: false }}>
+      <OrderStack.Screen name="OrderScreen" component={OrdersScreen} />
+      <OrderStack.Screen name="ViewOrderScreen" component={CartScreen} />
+    </OrderStack.Navigator>
   );
 }

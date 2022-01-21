@@ -23,6 +23,7 @@ export type BottomTabParamList = {
   CustomerProduct: undefined;
   Favourites: undefined;
   Cart: undefined;
+  Orders: undefined;
 };
 
 export type BrandStacksList = {
@@ -59,5 +60,11 @@ export type FavouritesStacksList = {
 
 export type CartStacksList = {
   CartScreen: undefined;
+  CheckoutScreen: undefined;
+}
+
+export type OrderStacksList = {
+  OrderScreen: undefined;
+  ViewOrderScreen: undefined;
 }
 
