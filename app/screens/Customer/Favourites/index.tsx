@@ -17,6 +17,7 @@ export function FavouritesScreen() {
       showFavourite={false}
       isFavorite={true}
       isCart={false}
+      isOrder={false}
     />
   );
 }

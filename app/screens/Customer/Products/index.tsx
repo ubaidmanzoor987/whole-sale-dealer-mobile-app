@@ -40,6 +40,8 @@ export function CustomerProductsScreen() {
       refetchProducts={refetchProducts}
       showFavourite={true}
       isCart={false}
+      isProduct={true}
+      isOrder={false}
     />
   );
 }

@@ -1,34 +1,19 @@
 import * as actionTypes from './actionTypes';
 
 export interface IProducts {
-  product_id: number;
-  product_name: string;
-  image1?: string;
-  image2?: string;
-  image3?: string;
-  price: number;
-  quantities: number;
-  product_des?: string;
-  brand_id: number;
-  user_id: number;
-  brand_name?: string;
-  user_name_shopkeeper?: string;
-  user_shop_name?: string,
-  user_owner_name?: string,
-  user_address? : string,
-  user_image? : string,
-  image1b64?: string,
-  image2b64?: string,
-  image3b64?: string,
+  id: Number;
+  quantity: Number,
+  total_price: Number,
 }
 
 export interface requestProducts {
-  data: IProducts[];
+  product: IProducts[];
+  user_id: Number | null;
 }
 
 export interface ProductsState {
   pending: boolean;
-  data: IProducts[] | [];
+  data: any;
   error: string | null;
   success: boolean;
   message: string;

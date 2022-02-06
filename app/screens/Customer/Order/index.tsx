@@ -1,10 +1,19 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import CommonScreen from '../Common';
-import { getOrderProductDataSelector } from '@app/store/products/order/selector';
+import { getListOrdersDataSelector } from '@app/store/products/listOrders/selector';
+import { fetchListOrderRequest } from '@app/store/products/listOrders/actions';
+import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 
 export function OrdersScreen() {
-  const orders = useSelector(getOrderProductDataSelector);
+  const dispatch = useDispatch();
+  const user = useSelector(getUserSelector)
+  useEffect(()=>{
+    if (user && user.id){
+      dispatch(fetchListOrderRequest({user_id: user.id}))
+    }
+  }, [])
+  const orders = useSelector(getListOrdersDataSelector);
   return (
     <CommonScreen
       title='Orders'

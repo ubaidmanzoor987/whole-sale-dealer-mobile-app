@@ -17,7 +17,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCartProductDataSelector } from '@app/store/products/cart/selector';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { fetchProductsOrderRequest } from '@app/store/products/order/actions';
+import {
+  fetchPlaceOrderRequest,
+  fetchPlaceOrderClear,
+} from '@app/store/products/placeOrder/actions';
+import {
+  getPlaceOrderDataSelector,
+  getPlaceOrderPendingSelector,
+  getPlaceOrderErrorSelector,
+} from '@app/store/products/placeOrder/selector';
+import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
+
+import { Snackbar } from 'react-native-paper';
 
 interface renderProps {
   product: IProducts;
@@ -27,21 +38,40 @@ interface renderProps {
 
 export function CheckoutScreen() {
   const dispatch = useDispatch();
-  const [orders, setOrders] = React.useState<Array<IProducts>>([]);
-
+  const [visible, setVisible] = React.useState<boolean>(false);
+  const [isError, setIsError] = React.useState<boolean>(false);
+  const [message, setMessage] = React.useState<string>('');
+  const user = useSelector(getUserSelector);
   const cart = useSelector(getCartProductDataSelector);
+  const orderData = useSelector(getPlaceOrderDataSelector);
+  const orderPending = useSelector(getPlaceOrderPendingSelector);
+  const orderError = useSelector(getPlaceOrderErrorSelector);
   const navigation = useNavigation();
+  const ref = useRef() as any;
 
   const RenderedItemsData = ({ product }: renderProps) => {
     const [quantity, setQuantity] = useState<string>('1');
-
     const incrDecreaseQuantity = (name: string) => {
       switch (name) {
         case 'plus':
+          if (Number(quantity) === product.quantities) return;
           setQuantity((Number(quantity) + 1).toString());
+          product.order_quantity = (
+            Number(product.order_quantity) + 1
+          ).toString();
+          product.order_price = (
+            Number(product.price) * Number(product.order_quantity)
+          ).toString();
           break;
+
         case 'minus':
-          if (Number(quantity) > 1) {
+          if (Number(product.order_quantity) > 1) {
+            product.order_quantity = (
+              Number(product.order_quantity) - 1
+            ).toString();
+            product.order_price = (
+              Number(product.price) * Number(product.order_quantity)
+            ).toString();
             setQuantity((Number(quantity) - 1).toString());
           }
           break;
@@ -100,7 +130,7 @@ export function CheckoutScreen() {
             </View>
             <View style={{ width: '100%', marginLeft: '-5%' }}>
               <TextInput
-                value={quantity}
+                value={product.order_quantity ? product.order_quantity : '1'}
                 placeholder="Quantity"
                 style={styles.inputField}
                 keyboardType="decimal-pad"
@@ -138,19 +168,23 @@ export function CheckoutScreen() {
                 backgroundColor: 'transparent',
               }}
             >
-              <TouchableOpacity onPress={() =>{}}
-                style={{display:'flex', flexDirection:'row'}}
-              >
-                <Text>
-                  Remove Product From Cart
-                </Text>
-                <MaterialCommunityIcons
-                  name="delete-empty"
-                  color="red"
-                  size={25}
-                  style={{marginTop: '-2%', marginLeft: '2%'}}
-                />
-              </TouchableOpacity>
+              <Text>Total Quantities Available in Stock</Text>
+              <Text> {Number(product.quantities) - (Number(product.order_quantity))}</Text>
+            </View>
+            <View
+              style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'row',
+                backgroundColor: 'transparent',
+              }}
+            >
+              <Text>Total Price</Text>
+              <Text>
+                {' '}
+                {Number(product.price) *
+                  Number(product.order_quantity ? product.order_quantity : 1)}
+              </Text>
             </View>
           </View>
         </View>
@@ -162,9 +196,40 @@ export function CheckoutScreen() {
     navigation.goBack();
   };
 
+  React.useEffect(()=>{
+    if (orderError && orderError.length > 0) {
+      setVisible(true);
+      setMessage(orderError);
+      dispatch(fetchPlaceOrderClear());
+    }
+  }, [orderError])
+
+  React.useEffect(()=>{
+    if (ref.current === true && orderData.length > 0) {
+      setVisible(true);
+      setMessage("Successfully placed order");
+      ref.current = false;
+      dispatch(fetchPlaceOrderClear());
+    }
+  }, [ref.current, orderData])
+
   const onPressOrder = () => {
-    dispatch(fetchProductsOrderRequest({data: cart}))
+    if (user && user.id) {
+      const product = cart.map((ct: IProducts) => ({
+        id: ct.product_id,
+        quantity: Number(ct.order_quantity),
+        total_price: Number(ct.order_price),
+      }));
+      const cartData = {
+        user_id: user && user.id,
+        product,
+      };
+      dispatch(fetchPlaceOrderRequest(cartData));
+      ref.current = true;
+    }
   };
+
+  const onDismissSnackBar = () => setVisible(false);
 
   return (
     <View style={styles.container}>
@@ -194,34 +259,45 @@ export function CheckoutScreen() {
         )}
         ListEmptyComponent={<EmptyContainer />}
       />
-      <View
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-        }}
-      >
-        <TouchableOpacity
-          onPress={onPressOrder}
+      {cart.length > 0 && (
+        <View
           style={{
-            borderRadius: 40,
-            width: '45%',
-            backgroundColor: '#5460E0',
-            height: 70,
-            display:'flex',
-            alignItems:'center',
-            justifyContent:'center'
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginVertical: '5%',
           }}
         >
-          <Text
-            style={{ color: 'white', fontWeight: 'bold' }}
+          <TouchableOpacity
+            ref={ref}
+            onPress={onPressOrder}
+            style={{
+              borderRadius: 40,
+              width: '45%',
+              backgroundColor: '#5460E0',
+              height: 70,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            Place Your Order
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>
+              Place Your Order
+            </Text>
+          </TouchableOpacity>
+          <Snackbar
+            visible={visible}
+            onDismiss={onDismissSnackBar}
+            style={{
+              backgroundColor: isError ? 'red' : '#5460E0',
+              marginBottom: '6%',
+            }}
+          >
+            <Text style={{ color: 'white' }}>{message}</Text>
+          </Snackbar>
+        </View>
+      )}
     </View>
   );
 }
@@ -230,10 +306,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F0F0F8',
     marginTop: Constants.statusBarHeight,
+    height: '100%',
   },
   titleContainer: {
     backgroundColor: 'white',
-    height: '15%',
     width: '99%',
     alignSelf: 'center',
     borderBottomRightRadius: 80,
@@ -266,7 +342,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignSelf: 'center',
     backgroundColor: 'white',
-    marginTop: '2%',
+    marginTop: 50,
   },
   tableRow: {
     flexDirection: 'row',

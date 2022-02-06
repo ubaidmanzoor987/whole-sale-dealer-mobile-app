@@ -109,8 +109,8 @@ export default function AddUserScreen() {
             <Image
               source={{ uri: ENV_VAR.baseUrl + item.image }}
               style={{
-                width: 80,
-                height: 80,
+                width: 70,
+                height: 70,
                 borderRadius: 25,
               }}
             />
@@ -125,8 +125,8 @@ export default function AddUserScreen() {
             flexDirection: 'column',
           }}
         >
-          <Text style={{ fontSize: 20, marginTop: '3%' }}>
-            {item.owner_name?.toUpperCase()}
+          <Text style={{ fontSize: 20, marginTop: '1%', paddingBottom: '8%' }}>
+            {item.user_name?.toUpperCase()}
           </Text>
           <Text style={{ marginTop: '-7%' }}>Shop Name: {item.shop_name}</Text>
           <Text>Email: {item.email}</Text>

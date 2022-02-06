@@ -13,16 +13,21 @@ import { ENV_VAR } from '@app/utils/environments';
 import { IProducts } from '@app/store/products/listProducts/types';
 import { ImageResult } from 'expo-image-manipulator';
 import Constants from 'expo-constants';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductsCartRequest } from '@app/store/products/cart/actions';
 import { useNavigation } from '@react-navigation/native';
-import { Switch } from 'react-native-paper';
+import { Snackbar, Switch } from 'react-native-paper';
+import { getCartProductDataSelector } from '@app/store/products/cart/selector';
+import { responseData } from 'store/products/listOrders/types';
+import { updateOrder } from '@app/utils/apis';
+import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
+import { fetchListOrderRequest } from '@app/store/products/listOrders/actions';
 
 interface Props {
   ref: React.Ref<any>;
   navigation?: any;
   closeSheet?: any;
-  row?: IProducts;
+  row?: (IProducts & responseData) | any;
   isCart?: boolean;
   isOrder?: boolean;
 }
@@ -36,13 +41,18 @@ interface IForm {
 const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
   (_, ref) => {
     const [isSwitchOn, setIsSwitchOn] = useState(false);
-
+    const [visible, setVisible] = useState(false);
+    const [message, setMessage] = useState('');
+    const [isError, setIsError] = useState(false);
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const [previewImage, setPreviewImage] = React.useState<ImageResult>();
     const [cartProducts, setCartProducts] = React.useState<Array<IProducts>>(
       []
     );
+    const cartStoreProducts = useSelector(getCartProductDataSelector);
+
+    const user = useSelector(getUserSelector);
 
     const [form, setForm] = useState<IForm>({
       image1: {
@@ -114,7 +124,25 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
       if (_.row) {
         const ind = getIndex(cartProducts, _.row.product_id);
         if (ind === -1) {
+          _.row.order_quantity = '1';
+          _.row.order_price = _.row.price.toString();
+          const newArray = [...cartProducts];
+          newArray.push(_.row);
+          dispatch(fetchProductsCartRequest({ data: newArray }));
           setCartProducts((oldData) => [...oldData, _.row as any]);
+        }
+        _.closeSheet();
+      }
+    };
+
+    const onPressRemoveFromCart = () => {
+      if (_.row) {
+        const ind = getIndex(cartStoreProducts, _.row.product_id);
+        if (ind !== -1) {
+          const newArray = [...cartStoreProducts];
+          newArray.splice(ind, 1);
+          dispatch(fetchProductsCartRequest({ data: newArray }));
+          setCartProducts(newArray);
         }
         _.closeSheet();
       }
@@ -122,6 +150,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
 
     useEffect(() => {
       const { row } = _;
+      console.log('rpw', row.status, row.order_id)
       if (row) {
         setForm({
           image2: {
@@ -149,17 +178,39 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
           width: -1,
           base64: row.image1b64,
         });
+        if (row.status && row.status === "completed") {
+          setIsSwitchOn(true);
+        }
       }
     }, [_.row]);
 
-    useEffect(() => {
-      if (cartProducts) {
-        dispatch(fetchProductsCartRequest({ data: cartProducts }));
-      }
-    }, [dispatch, cartProducts]);
-    const onToggleSwitch = () => {
+    // useEffect(() => {
+    //   if (cartProducts) {
+    //     dispatch(fetchProductsCartRequest({ data: cartProducts }));
+    //   }
+    // }, [dispatch, cartProducts]);
+    const onToggleSwitch = async () => {
       setIsSwitchOn(!isSwitchOn);
+      if (user && user.id) {
+        const dt = {
+          user_id: user.id,
+          order_id: _.row.order_id,
+          status: isSwitchOn ? "pending" : "completed"
+        };
+        setVisible(true);
+        const res = await updateOrder(dt);
+        console.log("res", res);
+        if (res.data && res.data.order_id) {
+          setMessage(res.message);
+        } 
+        if (res.error && res.error.length > 0) {
+          setMessage(res.error);
+          setIsError(true);
+        }
+        dispatch(fetchListOrderRequest({user_id: user.id}))
+      }
     };
+    const onDismissSnackBar = () => setVisible(false);
 
     return (
       <>
@@ -291,7 +342,9 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopStartRadius: 0,
                       }}
                     >
-                      <Text style={{ paddingVertical: '5%' }}>Shop Name </Text>
+                      <Text style={{ paddingVertical: '5%' }}>
+                        Customer Shop Address{' '}
+                      </Text>
                     </View>
                     <View
                       style={{
@@ -299,7 +352,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopEndRadius: 0,
                       }}
                     >
-                      <Text>{_.row?.user_shop_name}</Text>
+                      <Text>{_.row?.customer_shop_address}</Text>
                     </View>
                   </View>
                   <View style={styles.tableRow}>
@@ -310,7 +363,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                       }}
                     >
                       <Text style={{ paddingVertical: '5%' }}>
-                        Shop Keeper Name{' '}
+                        Customer Name{' '}
                       </Text>
                     </View>
                     <View
@@ -319,35 +372,11 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopEndRadius: 0,
                       }}
                     >
-                      <Text>{_.row?.user_name_shopkeeper}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.tableRow}>
-                    <View
-                      style={{
-                        ...styles.tableColumnLeft,
-                        borderTopStartRadius: 0,
-                        borderBottomWidth: 0.5,
-                        borderBottomStartRadius: 10,
-                      }}
-                    >
-                      <Text style={{ paddingVertical: '5%' }}>
-                        Shop Keeper Address{' '}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        ...styles.tableColumnRight,
-                        borderTopEndRadius: 0,
-                        borderBottomWidth: 0.5,
-                        borderBottomEndRadius: 10,
-                      }}
-                    >
-                      <Text>{_.row?.user_address}</Text>
+                      <Text>{_.row?.customer_name}</Text>
                     </View>
                   </View>
                 </View>
-                {_.isCart === false && (
+                {_.isCart === false && _.isOrder === false && (
                   <View
                     style={{
                       ...styles.inputFieldsMainView,
@@ -392,37 +421,8 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                       <View style={styles.addToCartButtonView}>
                         <TouchableOpacity
                           style={styles.addToCartButton}
-                          onPress={() => navigation.navigate('CheckoutScreen')}
+                          onPress={onPressRemoveFromCart}
                         >
-                          <Text
-                            style={{
-                              color: 'white',
-                              fontWeight: 'bold',
-                              fontSize: 20,
-                              fontStyle: 'italic',
-                              marginRight: 10,
-                              textTransform: 'none',
-                              paddingRight: 10,
-                            }}
-                          >
-                            Proceed to checkout{' '}
-                          </Text>
-                          <MaterialCommunityIcons
-                            name="cart"
-                            size={20}
-                            color={'white'}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    <View
-                      style={{
-                        ...styles.inputFieldsMainView,
-                        marginVertical: '2%',
-                      }}
-                    >
-                      <View style={styles.addToCartButtonView}>
-                        <TouchableOpacity style={styles.addToCartButton}>
                           <Text
                             style={{
                               color: 'white',
@@ -459,6 +459,16 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
               </View>
             </ScrollView>
           </ScrollView>
+          <Snackbar
+            visible={visible}
+            onDismiss={onDismissSnackBar}
+            style={{
+              backgroundColor: isError ? 'red' : '#5460E0',
+              marginBottom: '6%',
+            }}
+          >
+            <Text style={{ color: 'white' }}>{message}</Text>
+          </Snackbar>
         </Modalize>
       </>
     );

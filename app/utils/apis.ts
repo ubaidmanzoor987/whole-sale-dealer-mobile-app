@@ -98,3 +98,14 @@ export const expoPushToken = async (body) => {
     };
   }
 };
+
+export const updateOrder = async (body) => {
+  try {
+    const response = await axios.post('order/update', body);
+    return response.data;
+  } catch (e: any) {
+    return {
+      error: e.response ? e.response.data.error : e.message,
+    };
+  }
+};

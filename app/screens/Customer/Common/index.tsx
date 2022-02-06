@@ -15,14 +15,18 @@ import Constants from 'expo-constants';
 import { IProducts } from '@app/store/products/listProducts/types';
 import { ENV_VAR } from '@app/utils/environments';
 import DetailBottomSheet from './BottomSheet';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductsFavoriteRequest } from '@app/store/products/favourites/actions';
 import { EmptyContainer } from '@app/utils/commonFunctions';
+import { getFavouiteProductDataSelector } from '@app/store/products/favourites/selector';
+import { useNavigation } from '@react-navigation/native';
+import { responseData } from '@app/store/products/listOrders/types';
+import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 
 interface Props {
   title: string;
   subtitle: string;
-  data?: IProducts[];
+  data?: any;
   isPending?: boolean;
   error?: any;
   refetchProducts?: () => void;
@@ -34,7 +38,7 @@ interface Props {
 }
 
 interface renderProps {
-  product: IProducts;
+  product: IProducts & responseData;
   index?: any;
   type?: any;
 }
@@ -53,13 +57,22 @@ function CommonScreen({
   isOrder,
 }: Props) {
   const dispatch = useDispatch();
+  const favouritesProducts = useSelector(getFavouiteProductDataSelector);
   const productsDetailBottomSheetRef = useRef() as any;
   const [row, setRow] = useState<IProducts>({} as any);
   const [favourites, setFavourites] = React.useState<Array<IProducts>>([]);
+  
+  const user = useSelector(getUserSelector)
+  
   const openProductDetailSheet = (row: IProducts) => {
+    if (isOrder === true && user && user.user_type === "customer"){
+      return;
+    }
     productsDetailBottomSheetRef.current.open();
     setRow(row);
   };
+
+  const navigation = useNavigation();
 
   const handleClose = () => {
     productsDetailBottomSheetRef.current.close();
@@ -76,20 +89,25 @@ function CommonScreen({
       const newArray = [...favourites];
       newArray.splice(ind, 1);
       setFavourites(newArray);
+      dispatch(fetchProductsFavoriteRequest({ data: newArray }));
     } else {
       if (ind === -1) {
+        const newArray = [...favourites];
+        newArray.push(product);
+        dispatch(fetchProductsFavoriteRequest({ data: newArray }));
         setFavourites((oldData) => [...oldData, product]);
       } else {
         const newArray = [...favourites];
         newArray.splice(ind, 1);
+        dispatch(fetchProductsFavoriteRequest({ data: newArray }));
         setFavourites(newArray);
       }
     }
   };
 
-  useEffect(() => {
-    dispatch(fetchProductsFavoriteRequest({ data: favourites }));
-  }, [dispatch, favourites]);
+  // useEffect(() => {
+  //   dispatch(fetchProductsFavoriteRequest({ data: favourites }));
+  // }, [favourites]);
 
   const getFavoritesIcon = (product: IProducts) => {
     if (isFavorite === true) {
@@ -130,14 +148,18 @@ function CommonScreen({
           <Card.Title
             title={product?.product_name}
             subtitle={
-              <>
-                <Text>In Stock</Text>
-                <Text
-                  style={{ color: product?.quantities > 0 ? 'grey' : 'red' }}
-                >
-                  {product?.quantities > 0 ? ' Available' : ' Out Of Stock '}
-                </Text>
-              </>
+              isOrder === true ? (
+                <></>
+              ) : (
+                <>
+                  <Text>In Stock</Text>
+                  <Text
+                    style={{ color: product?.quantities > 0 ? 'grey' : 'red' }}
+                  >
+                    {product?.quantities > 0 ? ' Available' : ' Out Of Stock '}
+                  </Text>
+                </>
+              )
             }
             right={() => getRight(product)}
             titleStyle={{ color: '#5460E0' }}
@@ -150,7 +172,7 @@ function CommonScreen({
             <Text style={{ color: 'lightgreen' }}>
               A Product By {product.user_shop_name}
             </Text>
-            {isOrder && <Text style={{ color: 'blue' }}>Status: Pending</Text>}
+            {isOrder && <Text style={{ color: 'blue' }}>Status: {product.status}</Text>}
           </Card.Content>
         </Card>
       </TouchableWithoutFeedback>
@@ -214,6 +236,31 @@ function CommonScreen({
         )}
         ListEmptyComponent={<EmptyContainer />}
       />
+      {isCart === true && data && data?.length > 0 && (
+        <>
+          <View style={styles.addToCartButtonView}>
+            <TouchableOpacity
+              style={styles.addToCartButton}
+              onPress={() => navigation.navigate('CheckoutScreen')}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  fontStyle: 'italic',
+                  marginRight: 10,
+                  textTransform: 'none',
+                  paddingRight: 10,
+                }}
+              >
+                Proceed to checkout{' '}
+              </Text>
+              <MaterialCommunityIcons name="cart" size={20} color={'white'} />
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       <DetailBottomSheet
         ref={productsDetailBottomSheetRef}
@@ -309,5 +356,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: '2%',
     backgroundColor: 'white',
+  },
+  inputFieldsMainView: {
+    backgroundColor: 'transparent',
+  },
+  addToCartButtonView: {
+    backgroundColor: 'transparent',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: '5%',
+  },
+  addToCartButton: {
+    width: '50%',
+    padding: '4%',
+    borderRadius: 20,
+    backgroundColor: '#8D32AB',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

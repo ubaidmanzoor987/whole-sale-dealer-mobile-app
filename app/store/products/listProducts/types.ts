@@ -20,6 +20,8 @@ export interface IProducts {
   image1b64?: string,
   image2b64?: string,
   image3b64?: string,
+  order_quantity?: string;
+  order_price?: string;
 }
 
 export interface requestProducts {

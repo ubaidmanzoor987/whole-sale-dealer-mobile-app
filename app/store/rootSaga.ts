@@ -12,6 +12,8 @@ import listShopkeeperCustomers from './customers/shopkeeperCustomerList/sagas';
 import favouritesProductSaga from './products/favourites/sagas';
 import cartProductSaga from './products/cart/sagas';
 import orderProductSaga from './products/order/sagas';
+import placeOrderSaga from './products/placeOrder/sagas';
+import listOrderSaga from './products/listOrders/sagas';
 
 export function* rootSaga() {
   yield all([fork(registerSaga)]);
@@ -26,4 +28,6 @@ export function* rootSaga() {
   yield all([fork(favouritesProductSaga)]);
   yield all([fork(cartProductSaga)]);
   yield all([fork(orderProductSaga)]);
+  yield all([fork(placeOrderSaga)]);
+  yield all([fork(listOrderSaga)]);
 }

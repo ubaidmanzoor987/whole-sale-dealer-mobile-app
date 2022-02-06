@@ -64,7 +64,7 @@ function Customers() {
 
   const cols = [
     {
-      name: 'Customer Name',
+      name: user?.user_type === 'shop_keeper' ? 'Customer Name' : 'Shop Keeper Name' ,
       col_name: 'user_name',
       type: 'string',
     },
