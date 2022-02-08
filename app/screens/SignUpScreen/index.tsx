@@ -8,12 +8,15 @@ import {
   Platform,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { Button } from 'react-native-paper';
+import { Button, Snackbar } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 
-import { fetchUserCreateRequest } from '@app/store/user/register/actions';
+import {
+  fetchUserCreateClear,
+  fetchUserCreateRequest,
+} from '@app/store/user/register/actions';
 import { Image, Text, View } from '@app/screens/Themed';
 
 import {
@@ -45,7 +48,10 @@ function SignUpScreen({
   const [focusEmail, setFocusEmail] = useState<boolean>(false);
   const [focusShopName, setFocusShopName] = useState<boolean>(false);
   const [user_type, setUserType] = useState<string>('shop_keeper');
-  const [visibleToast, setVisibleToast] = useState<boolean>(false);
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+  const onDismissSnackBar = () => setVisible(false);
 
   let userNameFocusField = null as any;
   let passwordFocusField = null as any;
@@ -54,6 +60,8 @@ function SignUpScreen({
   useEffect(() => {
     if (errorMessageServer && errorMessageServer.length > 0) {
       setErrorMessage(errorMessageServer);
+      setIsError(true);
+      setMessage('Failed to signup');
     }
   }, [errorMessageServer]);
 
@@ -63,7 +71,10 @@ function SignUpScreen({
       setPassword('');
       setEmail('');
       setShopName('');
-      navigation.navigate('LogIn');
+      setVisible(true);
+      setMessage('Successfully Sign up');
+      dispatch(fetchUserCreateClear());
+      // navigation.navigate('LogIn');
     }
   }, [data]);
 
@@ -74,6 +85,10 @@ function SignUpScreen({
   const handleSignUp = () => {
     if (email.length === 0) {
       setErrorMessage('Email is Required.');
+      return;
+    } else if (validate(email) === false) {
+      setErrorMessage('Invalid Email.');
+      return;
     } else if (
       user_name.length === 0 ||
       user_name.length < 5 ||
@@ -82,6 +97,7 @@ function SignUpScreen({
       setErrorMessage(
         'User Name is required and must between 5 to 15 characters. '
       );
+      return;
     } else if (
       password.length === 0 ||
       password.length < 5 ||
@@ -90,6 +106,7 @@ function SignUpScreen({
       setErrorMessage(
         'Password is required and must between 5 to 15 characters. '
       );
+      return;
     } else if (
       shop_name.length === 0 ||
       shop_name.length < 5 ||
@@ -98,6 +115,7 @@ function SignUpScreen({
       setErrorMessage(
         'Shop Name is required and must between 5 to 30 characters'
       );
+      return;
     }
     if (
       errorMessage.length === 0 &&
@@ -225,130 +243,133 @@ function SignUpScreen({
   );
 
   return (
-    <KeyboardAwareScrollView contentContainerStyle={styles.container}>
-      <TitleWidget />
-      <View style={styles.fieldsView}>
-        <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Email*</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-              borderColor: focusEmail ? '#5460E0' : 'black',
-            }}
-          >
-            <TextInputNative
-              onFocus={toggleFocusEmail}
-              onChangeText={handleEmail}
-              placeholder="Enter Email"
-              onSubmitEditing={setfocusUsername}
-              style={styles.inputField}
-            />
-          </View>
-        </View>
-        <View style={styles.inputFieldsMainView1}>
-          <View style={styles.userNameView}>
-            <Text style={styles.labelText}>User Name*</Text>
+    <>
+      <KeyboardAwareScrollView contentContainerStyle={styles.container}>
+        <TitleWidget />
+        <View style={styles.fieldsView}>
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Email*</Text>
             <View
               style={{
-                ...styles.inputFieldSubView1,
-                borderColor: focusUserName ? '#5460E0' : 'black',
+                ...styles.inputFieldSubView,
+                borderColor: focusEmail ? '#5460E0' : 'black',
+              }}
+            >
+              <TextInputNative
+                onFocus={toggleFocusEmail}
+                onChangeText={handleEmail}
+                placeholder="Enter Email"
+                onSubmitEditing={setfocusUsername}
+                style={styles.inputField}
+              />
+            </View>
+          </View>
+          <View style={styles.inputFieldsMainView1}>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>User Name*</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                  borderColor: focusUserName ? '#5460E0' : 'black',
+                }}
+              >
+                <TextInputNative
+                  ref={(input) => {
+                    userNameFocusField = input;
+                  }}
+                  onFocus={toggleFocusUserName}
+                  onChangeText={handleUsername}
+                  placeholder="Enter User name"
+                  onSubmitEditing={setfocusShopNamefield}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={15}
+                />
+              </View>
+            </View>
+            <View style={styles.userNameView}>
+              <Text style={styles.labelText}>Shop Name*</Text>
+              <View
+                style={{
+                  ...styles.inputFieldSubView1,
+                  borderColor: focusShopName ? '#5460E0' : 'black',
+                }}
+              >
+                <TextInputNative
+                  ref={(input) => {
+                    shopNameFocusField = input;
+                  }}
+                  onFocus={toggleFocusShopName}
+                  onChangeText={handleShopName}
+                  placeholder="Enter Shop Name"
+                  onSubmitEditing={setfocusPassword}
+                  style={{ marginLeft: '11%' }}
+                  maxLength={30}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.inputFieldsMainView}>
+            <Text style={styles.labelText}>Password*</Text>
+            <View
+              style={{
+                ...styles.inputFieldSubView,
+                borderColor: focusPassword ? '#5460E0' : 'black',
               }}
             >
               <TextInputNative
                 ref={(input) => {
-                  userNameFocusField = input;
+                  passwordFocusField = input;
                 }}
-                onFocus={toggleFocusUserName}
-                onChangeText={handleUsername}
-                placeholder="Enter User name"
-                onSubmitEditing={setfocusShopNamefield}
-                style={{ marginLeft: '11%' }}
+                onFocus={toggleFocusPassword}
+                onChangeText={handlePassoword}
+                placeholder="Enter Your Passwod"
+                onSubmitEditing={handleSignUp}
+                secureTextEntry={!visiblePass}
+                style={{ width: '80%', marginLeft: '5%' }}
                 maxLength={15}
               />
-            </View>
-          </View>
-          <View style={styles.userNameView}>
-            <Text style={styles.labelText}>Shop Name*</Text>
-            <View
-              style={{
-                ...styles.inputFieldSubView1,
-                borderColor: focusShopName ? '#5460E0' : 'black',
-              }}
-            >
-              <TextInputNative
-                ref={(input) => {
-                  shopNameFocusField = input;
-                }}
-                onFocus={toggleFocusShopName}
-                onChangeText={handleShopName}
-                placeholder="Enter Shop Name"
-                onSubmitEditing={setfocusPassword}
-                style={{ marginLeft: '11%' }}
-                maxLength={30}
+              <MaterialCommunityIcons
+                name={visiblePass ? 'eye' : 'eye-off'}
+                size={24}
+                style={styles.icons}
+                onPress={togglePass}
               />
             </View>
           </View>
-        </View>
-
-        <View style={styles.inputFieldsMainView}>
-          <Text style={styles.labelText}>Password*</Text>
-          <View
-            style={{
-              ...styles.inputFieldSubView,
-              borderColor: focusPassword ? '#5460E0' : 'black',
-            }}
-          >
-            <TextInputNative
-              ref={(input) => {
-                passwordFocusField = input;
-              }}
-              onFocus={toggleFocusPassword}
-              onChangeText={handlePassoword}
-              placeholder="Enter Your Passwod"
-              onSubmitEditing={handleSignUp}
-              secureTextEntry={!visiblePass}
-              style={{ width: '80%', marginLeft: '5%' }}
-              maxLength={15}
-            />
-            <MaterialCommunityIcons
-              name={visiblePass ? 'eye' : 'eye-off'}
-              size={24}
-              style={styles.icons}
-              onPress={togglePass}
+          {errorMessage ? (
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+          ) : (
+            <></>
+          )}
+          <View style={styles.clientView}>
+            <Text style={styles.clientViewText}>Sign Up As Client</Text>
+            <Switch
+              value={isSwitchOn}
+              onValueChange={onToggleSwitch}
+              thumbColor="#5460E0"
             />
           </View>
-        </View>
-        {errorMessage ? (
-          <Text style={styles.errorMessage}>{errorMessage}</Text>
-        ) : (
-          <></>
-        )}
-        <View style={styles.clientView}>
-          <Text style={styles.clientViewText}>Sign Up As Client</Text>
-          <Switch
-            value={isSwitchOn}
-            onValueChange={onToggleSwitch}
-            thumbColor="#5460E0"
-          />
-        </View>
-        {isPending ? (
-          <ActivityIndicator
-            size="large"
-            color="#5460E0"
-            style={styles.activitIndicator}
-          />
-        ) : (
-          <Button
-            style={styles.signupButton}
-            icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
-            mode="contained"
-            onPress={handleSignUp}
-          >
-            <Text style={styles.signUpButtonText}>Sign Up</Text>
-          </Button>
-        )}
+          {isPending ? (
+            <ActivityIndicator
+              size="large"
+              color="#5460E0"
+              style={styles.activitIndicator}
+            />
+          ) : (
+            <Button
+              style={styles.signupButton}
+              icon={() => (
+                <FontAwesome name="users" size={15} color="#5460E0" />
+              )}
+              mode="contained"
+              onPress={handleSignUp}
+            >
+              <Text style={styles.signUpButtonText}>Sign Up</Text>
+            </Button>
+          )}
 
-        {/* <View style={styles.socialView}>
+          {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
               source={require('@app/assets/images/google.png')}
@@ -372,19 +393,31 @@ function SignUpScreen({
             <></>
           )}
         </View> */}
-        <Button
-          style={styles.loginButton}
-          icon={() => (
-            <MaterialCommunityIcons name="login" size={20} color="white" />
-          )}
-          mode="contained"
-          onPress={handleLogin}
-        >
-          <Text style={styles.loginButtonText}>Sign In</Text>
-        </Button>
-      {/* {visibleToast && <ToastScreen message="Successfully Sign Up" />} */}
-      </View>
-    </KeyboardAwareScrollView>
+          <Button
+            style={styles.loginButton}
+            icon={() => (
+              <MaterialCommunityIcons name="login" size={20} color="white" />
+            )}
+            mode="contained"
+            onPress={handleLogin}
+          >
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          </Button>
+
+          {/* {visibleToast && <ToastScreen message="Successfully Sign Up" />} */}
+        </View>
+      </KeyboardAwareScrollView>
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        style={{
+          backgroundColor: isError ? 'red' : '#5460E0',
+          marginBottom: '6%',
+        }}
+      >
+        <Text style={{ color: 'white' }}>{message}</Text>
+      </Snackbar>
+    </>
   );
 }
 
