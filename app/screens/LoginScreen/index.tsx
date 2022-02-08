@@ -240,13 +240,13 @@ function LoginScreen({
           {/* <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
             Forgot Password
           </Text> */}
-          <TouchableOpacity onPress={forgetScreen}>
+          {/* <TouchableOpacity onPress={forgetScreen}>
               <Text style={{ textDecorationLine: 'underline', color: '#5460E0' }}>
                 Forget Password
               </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
-        <View style={styles.socialView}>
+        {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
               source={require('@app/assets/images/google.png')}
@@ -269,7 +269,7 @@ function LoginScreen({
           ) : (
             <></>
           )}
-        </View>
+        </View> */}
         <Button
           style={styles.signupButton}
           icon={() => <FontAwesome name="users" size={15} color="#5460E0" />}
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '85%',
-    padding: '1.8%',
+    padding: '3%',
     borderRadius: 20,
     backgroundColor: '#5460E0',
   },
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: '10%',
     borderColor: 'grey',
-    padding: '1.8%',
+    padding: '3%',
   },
   signUpButtonText: {
     fontSize: 13,

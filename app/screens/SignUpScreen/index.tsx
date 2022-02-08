@@ -348,7 +348,7 @@ function SignUpScreen({
           </Button>
         )}
 
-        <View style={styles.socialView}>
+        {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.socialTouchable}>
             <Image
               source={require('@app/assets/images/google.png')}
@@ -371,7 +371,7 @@ function SignUpScreen({
           ) : (
             <></>
           )}
-        </View>
+        </View> */}
         <Button
           style={styles.loginButton}
           icon={() => (

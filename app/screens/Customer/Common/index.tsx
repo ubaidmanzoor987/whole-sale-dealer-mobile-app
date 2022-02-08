@@ -65,9 +65,9 @@ function CommonScreen({
   const user = useSelector(getUserSelector)
   
   const openProductDetailSheet = (row: IProducts) => {
-    if (isOrder === true && user && user.user_type === "customer"){
-      return;
-    }
+    // if (isOrder === true && user && user.user_type === "customer"){
+    //   return;
+    // }
     productsDetailBottomSheetRef.current.open();
     setRow(row);
   };
@@ -169,9 +169,9 @@ function CommonScreen({
             <Text style={{ color: '#76A8B0' }}>
               Brand {product?.brand_name}
             </Text>
-            <Text style={{ color: 'lightgreen' }}>
+            {/* <Text style={{ color: 'lightgreen' }}>
               A Product By {product.user_shop_name}
-            </Text>
+            </Text> */}
             {isOrder && <Text style={{ color: 'blue' }}>Status: {product.status}</Text>}
           </Card.Content>
         </Card>

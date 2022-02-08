@@ -150,7 +150,6 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
 
     useEffect(() => {
       const { row } = _;
-      console.log('rpw', row.status, row.order_id)
       if (row) {
         setForm({
           image2: {
@@ -178,8 +177,10 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
           width: -1,
           base64: row.image1b64,
         });
-        if (row.status && row.status === "completed") {
+        if (row.status && row.status === 'completed') {
           setIsSwitchOn(true);
+        } else {
+          setIsSwitchOn(false);
         }
       }
     }, [_.row]);
@@ -190,24 +191,27 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
     //   }
     // }, [dispatch, cartProducts]);
     const onToggleSwitch = async () => {
+      if (isSwitchOn === true) {
+        return;
+      }
       setIsSwitchOn(!isSwitchOn);
       if (user && user.id) {
         const dt = {
           user_id: user.id,
           order_id: _.row.order_id,
-          status: isSwitchOn ? "pending" : "completed"
+          status: isSwitchOn ? 'pending' : 'completed',
         };
         setVisible(true);
         const res = await updateOrder(dt);
-        console.log("res", res);
+        console.log('res', res);
         if (res.data && res.data.order_id) {
           setMessage(res.message);
-        } 
+        }
         if (res.error && res.error.length > 0) {
           setMessage(res.error);
           setIsError(true);
         }
-        dispatch(fetchListOrderRequest({user_id: user.id}))
+        dispatch(fetchListOrderRequest({ user_id: user.id }));
       }
     };
     const onDismissSnackBar = () => setVisible(false);
@@ -294,7 +298,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                       </Text>
                     </View>
                     <View style={styles.tableColumnRight}>
-                      <Text>{_.row?.quantities}</Text>
+                      <Text>{_.row.quantities ?  _.row.quantities : '10'}</Text>
                     </View>
                   </View>
                   <View style={styles.tableRow}>
@@ -314,7 +318,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopEndRadius: 0,
                       }}
                     >
-                      <Text>{_.row?.price}</Text>
+                      <Text>{_.row.price ?  _.row.price : '1000'}</Text>
                     </View>
                   </View>
                   <View style={styles.tableRow}>
@@ -332,7 +336,47 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopEndRadius: 0,
                       }}
                     >
-                      <Text>{_.row?.brand_name}</Text>
+                      <Text>
+                        {_.row.brand_name ? _.row.brand_name : 'Test Brand'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.tableRow}>
+                    <View
+                      style={{
+                        ...styles.tableColumnLeft,
+                        borderTopStartRadius: 0,
+                      }}
+                    >
+                      {user?.user_type === 'customer' ? (
+                        <Text style={{ paddingVertical: '5%' }}>
+                          Shop keeper Shop Name{' '}
+                        </Text>
+                      ) : (
+                        <Text style={{ paddingVertical: '5%' }}>
+                          Customer Shop Name{' '}
+                        </Text>
+                      )}
+                    </View>
+                    <View
+                      style={{
+                        ...styles.tableColumnRight,
+                        borderTopEndRadius: 0,
+                      }}
+                    >
+                      {user?.user_type === 'customer' ? (
+                        <Text>
+                          {_.row.user_shop_name
+                            ? _.row.user_shop_name
+                            : 'lhr, pakistan'}
+                        </Text>
+                      ) : (
+                        <Text>
+                          {_.row.customer_shop_name
+                            ? _.row.customer_shop_name
+                            : 'customer'}
+                        </Text>
+                      )}
                     </View>
                   </View>
                   <View style={styles.tableRow}>
@@ -343,7 +387,9 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                       }}
                     >
                       <Text style={{ paddingVertical: '5%' }}>
-                        Customer Shop Address{' '}
+                        {user?.user_type === 'customer'
+                          ? 'Shop Keeper Name'
+                          : 'Customer Name'}{' '}
                       </Text>
                     </View>
                     <View
@@ -352,27 +398,19 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                         borderTopEndRadius: 0,
                       }}
                     >
-                      <Text>{_.row?.customer_shop_address}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.tableRow}>
-                    <View
-                      style={{
-                        ...styles.tableColumnLeft,
-                        borderTopStartRadius: 0,
-                      }}
-                    >
-                      <Text style={{ paddingVertical: '5%' }}>
-                        Customer Name{' '}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        ...styles.tableColumnRight,
-                        borderTopEndRadius: 0,
-                      }}
-                    >
-                      <Text>{_.row?.customer_name}</Text>
+                      {user?.user_type === 'customer' ? (
+                        <Text>
+                          {_.row.user_name_shopkeeper
+                            ? _.row.user_name_shopkeeper
+                            : 'shopkeeper'}
+                        </Text>
+                      ) : (
+                        <Text>
+                          {_.row.customer_name
+                            ? _.row.customer_name
+                            : 'customer'}
+                        </Text>
+                      )}
                     </View>
                   </View>
                 </View>
@@ -446,7 +484,7 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                     </View>
                   </>
                 )}
-                {_.isOrder === true && (
+                {_.isOrder === true && user?.user_type === 'shop_keeper' ? (
                   <View style={styles.statusView}>
                     <Text style={styles.statusViewText}>Order Complete</Text>
                     <Switch
@@ -455,6 +493,8 @@ const ProductDetailsBottomSheet: React.FC<Props> = React.forwardRef(
                       thumbColor="#5460E0"
                     />
                   </View>
+                ) : (
+                  <View style={{ marginVertical: '5%' }}></View>
                 )}
               </View>
             </ScrollView>

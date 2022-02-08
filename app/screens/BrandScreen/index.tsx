@@ -193,14 +193,14 @@ function TableWidget(props: Props) {
                 color={'#5460E0'}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDelete(itemData)}>
+            {/* <TouchableOpacity onPress={() => handleDelete(itemData)}>
               <MaterialCommunityIcons
                 name="delete"
                 size={20}
                 color={'red'}
                 style={{ opacity: 0.8 }}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </TouchableWithoutFeedback>

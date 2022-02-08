@@ -12,7 +12,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text, View } from '@app/screens/Themed';
 import { ENV_VAR } from '@app/utils/environments';
 
@@ -90,7 +89,7 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                   borderWidth: 1,
                   borderColor: 'lightgrey',
                 }}
-                source={{ uri: form.image.uri }}
+                source={{ uri: ENV_VAR.baseUrl + form.image.uri }}
               />
             ) : (
               <Image
@@ -138,7 +137,7 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                     maxLength={50}
                     defaultValue={form.user_name}
                     value={form.user_name}
-                    // editable={false}
+                    editable={false}
                   />
                 </View>
               </View>
@@ -157,6 +156,8 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                     style={{ width: '80%', marginLeft: '5%' }}
                     maxLength={50}
                     defaultValue={form.shop_name}
+                    editable={false}
+
                   />
                 </View>
               </View>
@@ -178,6 +179,8 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                     maxLength={50}
                     value={form.owner_name}
                     defaultValue={form.owner_name}
+                    editable={false}
+
                   />
                 </View>
               </View>
@@ -192,50 +195,13 @@ const AddBrandBottomSheet: React.FC<Props> = React.forwardRef((_, ref) => {
                     onChangeText={(e) =>
                       setForm(() => ({ ...form, owner_phone_no: e }))
                     }
-                    placeholder="Enter Number"
+                    placeholder="Owner Mobile Number"
                     keyboardType="numeric"
                     style={{ width: '80%', marginLeft: '5%' }}
                     value={form.owner_phone_no}
                     defaultValue={form.owner_phone_no}
-                  />
-                </View>
-              </View>
-              <View style={styles.inputFieldsMainView}>
-                <Text style={styles.labelText}>Shop Phone Number</Text>
-                <View
-                  style={{
-                    ...styles.inputFieldSubView,
-                  }}
-                >
-                  <TextInputNative
-                    onChangeText={(e) =>
-                      setForm(() => ({ ...form, shop_phone_no1: e }))
-                    }
-                    placeholder="Enter Number"
-                    keyboardType="numeric"
-                    style={{ width: '80%', marginLeft: '5%' }}
-                    value={form.shop_phone_no1}
-                    defaultValue={form.shop_phone_no1}
-                  />
-                </View>
-              </View>
-              <View style={styles.inputFieldsMainView}>
-                <Text style={styles.labelText}>Address</Text>
-                <View
-                  style={{
-                    ...styles.inputFieldSubView,
-                    height: 70,
-                  }}
-                >
-                  <TextInputNative
-                    onChangeText={(e) =>
-                      setForm(() => ({ ...form, address: e }))
-                    }
-                    placeholder="Enter Your Address"
-                    style={{ width: '80%', marginLeft: '5%' }}
-                    multiline={true}
-                    value={form.address}
-                    defaultValue={form.address}
+                    editable={false}
+
                   />
                 </View>
               </View>
@@ -254,6 +220,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     padding: 0,
+    marginBottom : '20%'
   },
   textStyle: {
     color: '#1D1D1F',

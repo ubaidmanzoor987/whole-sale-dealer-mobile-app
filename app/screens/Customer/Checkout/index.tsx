@@ -29,6 +29,7 @@ import {
 import { getDataSelector as getUserSelector } from '@app/store/user/login/selector';
 
 import { Snackbar } from 'react-native-paper';
+import { fetchProductsCartRequest } from '@app/store/products/cart/actions';
 
 interface renderProps {
   product: IProducts;
@@ -46,6 +47,7 @@ export function CheckoutScreen() {
   const orderData = useSelector(getPlaceOrderDataSelector);
   const orderPending = useSelector(getPlaceOrderPendingSelector);
   const orderError = useSelector(getPlaceOrderErrorSelector);
+
   const navigation = useNavigation();
   const ref = useRef() as any;
 
@@ -196,6 +198,23 @@ export function CheckoutScreen() {
     navigation.goBack();
   };
 
+  const getIndex = (array, value: number) => {
+    const ind = array.findIndex((obj) => obj.product_id === value);
+    return ind;
+  };
+
+  const onPressRemoveFromCart = () => {
+    if (_.row) {
+      const ind = getIndex(cart, _.row.product_id);
+      if (ind !== -1) {
+        const newArray = [...cart];
+        newArray.splice(ind, 1);
+        dispatch(fetchProductsCartRequest({ data: newArray }));
+      }
+      _.closeSheet();
+    }
+  };
+  
   React.useEffect(()=>{
     if (orderError && orderError.length > 0) {
       setVisible(true);
@@ -224,6 +243,7 @@ export function CheckoutScreen() {
         user_id: user && user.id,
         product,
       };
+      dispatch(fetchProductsCartRequest({ data: [] }));
       dispatch(fetchPlaceOrderRequest(cartData));
       ref.current = true;
     }

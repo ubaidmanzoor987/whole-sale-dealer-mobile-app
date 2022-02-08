@@ -360,6 +360,15 @@ export default function AddProductScreen({
     } else if (selectedBrand && selectedBrand.length === 0) {
       setForm(() => ({ ...form, error: 'Brand is required' }));
       return;
+    } else if (form.image1 && form.image1.uri.length=== 0) {
+      setForm(() => ({ ...form, error: 'Image 1 is required' }));
+      return;
+    } else if (form.image2 && form.image2.uri.length=== 0) {
+      setForm(() => ({ ...form, error: 'Image 2 is required' }));
+      return;
+    } else if (form.image3 && form.image3.uri.length=== 0) {
+      setForm(() => ({ ...form, error: 'Image 3 is required' }));
+      return;
     }
     const data = {
       product_name: form.product_name,
@@ -676,7 +685,7 @@ export default function AddProductScreen({
               )}
             </View>
           </View>
-          {isEdit === true && (
+          {/* {isEdit === true && (
             <View
               style={{
                 ...styles.inputFieldsMainView,
@@ -696,7 +705,7 @@ export default function AddProductScreen({
                 </MaterialButton>
               </View>
             </View>
-          )}
+          )} */}
         </View>
       </KeyboardAwareScrollView>
       <Snackbar

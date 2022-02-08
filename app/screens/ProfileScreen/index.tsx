@@ -121,9 +121,12 @@ export default function ProfileScreen() {
 
   const handleSubmit = async () => {
     const data = { ...form };
-    if (form.image && form.image.base64 !== '') {
+    console.log("data", form.image)
+    if (form.image && form.image.base64 && form.image.base64 !== '') {
       data['imagebase64'] = `data:image/jpeg;base64,${form.image.base64},`;
       // data['isImage1Update'] = isImage1Update;
+    }else {
+      delete data['image'];
     }
     setIsPending(true);
     const res = await updateUser(data);
@@ -137,7 +140,7 @@ export default function ProfileScreen() {
       setIsError(false);
     } else if (res.error) {
       setVisible(true);
-      setMessage(res.message);
+      setMessage("Failed to update");
       setIsError(true);
       setIsPending(false);
     }
